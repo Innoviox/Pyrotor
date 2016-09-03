@@ -35,8 +35,9 @@ playing = 0
 try:
   open("resources/AI.txt")
 except:
-  print("Initializing subdictionaries")
+  print("Initializing subdictionaries...This may take a few minutes.")
   import diphthin
+  print("Initialized. Welcome!")
   
 #Tiles in "bag"
 global distribution
