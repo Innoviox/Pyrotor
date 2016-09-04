@@ -1,4 +1,4 @@
-from players import *
+from player import *
 
 class CPU(Player):
     def __init__(self, root, rack):
