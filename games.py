@@ -1,4 +1,5 @@
 from player import *
+from cpu import *
 
 class Game():
     def __init__(self, name1, name2, mode1, mode2):
