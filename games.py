@@ -1,4 +1,3 @@
-from functions import *
 from player import *
 
 class Game():
