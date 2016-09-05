@@ -1,5 +1,5 @@
 from functions import *
-from players import *
+from player import *
 
 class Game():
     def __init__(self, name1, name2, mode1, mode2):
