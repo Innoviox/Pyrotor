@@ -1,6 +1,3 @@
-from functions import *
-from tiles import *
-from players import *
 from games import *
 
 #Initialize the root
