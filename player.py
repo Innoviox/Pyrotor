@@ -1,4 +1,3 @@
-from functions import *
 from tiles import *
 class Player():
     def __init__(self, root, playerNum, name, x, y, mode1, mode2, rack):
