@@ -1,4 +1,3 @@
-from player import *
 from cpu import *
 
 class Game():
