@@ -45,6 +45,7 @@ class CPU(Player):
             popup(self.root, "Dictionary File Not Found", "Dictionary File Not Found\n\n\n", 500, 500)
             end()
         self.turnrotation = 0
+        self.valuations = {}
         ospdcomp=""
         for i in self.ospd:
             ospdcomp += i
