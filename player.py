@@ -1,6 +1,7 @@
-from tiles import *
+import tiles
+import functions as func
 class Player():
-    def __init__(self, root, playerNum, name, x, y, mode1, mode2, rack):
+    def __init__(self, root, playerNum, name, x, y, mode1, mode2, rack, distribution):
         self.board = [[" ", "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K ", "L ", "M ", "N ", "O "],
             ['01', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', 'TWS', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS'],
             ['02', ' ', 'DWS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'DWS', ' '],
@@ -18,7 +19,11 @@ class Player():
             ['14', ' ', 'DWS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'DWS', ' '],
             ['15', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', 'TWS', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS']]
 
-        self.root = root 
+        self.root = root
+        if distribution != ():
+           self.distribution = distribution
+        else:
+            self.distribution = False
         #OSPD stands for official scrabble player's dictionary
         #self.ospd = open("dict.txt").read().split() #taken from http://www.puzzlers.org/pub/wordlists/ospd.txt #/Volumes/PYTHONDISK/
         try:
@@ -27,7 +32,7 @@ class Player():
             for word in ospd:
                 self.ospd.append(word.strip())
         except:
-            popup(self.root, "Dictionary File Not Found", "Dictionary File Not Found\n\n\n", 500, 500)
+            func.popup(self.root, "Dictionary File Not Found", "Dictionary File Not Found\n\n\n", 500, 500)
             end()
         self.scores = {"a": 1, "c": 3, "b": 3, "e": 1, "d": 2, "g": 2,
        "f": 4, "i": 1, "h": 4, "k": 5, "j": 8, "m": 3,
@@ -59,16 +64,16 @@ class Player():
         pass
     
     def placeButtons(self):
-        self.shuffleButton = Button(self.root, text = "Shuffle", command = self.shuffleRack)
+        self.shuffleButton = func.Button(self.root, text = "Shuffle", command = self.shuffleRack)
         self.shuffleButton.place(x=self.x-50, y=self.y+100)
         
-        self.enterButton = Button(self.root, text = "Enter Word", command = self.getNewWord)
+        self.enterButton = func.Button(self.root, text = "Enter Word", command = self.getNewWord)
         self.enterButton.place(x=self.x+150, y=self.y+100)
         
-        self.returnButton = Button(self.root, text = "Return", command = self.returnMovables)
+        self.returnButton = func.Button(self.root, text = "Return", command = self.returnMovables)
         self.returnButton.place(x=self.x+250, y=self.y+100)
 
-        self.exchangeButton = Button(self.root, text = "Exchange", command= self.exchange)
+        self.exchangeButton = func.Button(self.root, text = "Exchange", command= self.exchange)
         self.exchangeButton.place(x = self.x+50, y=self.y+100)
         
     def hideButtons(self):
@@ -85,9 +90,9 @@ class Player():
         self.root.title("%s's Turn" % self.name)
         self.root.resizable(0,0)
         self.root.geometry("%dx%d%+d%+d"%(675, 700, 0, 0))
-        self.root.config(bg=generateRandomColor())
+        self.root.config(bg=func.generateRandomColor())
 #        self.root.config(
-        self.rackFrame = Frame(self.root, bd=1, relief=RAISED)
+        self.rackFrame = func.Frame(self.root, bd=1, relief=func.RAISED)
         self.rackFrame.place(x=self.x, y=self.y+25, width=300, height=50)
 
 
@@ -95,7 +100,7 @@ class Player():
         for movable in self.movables:
             movable.board = self.board
 
-        self.coverUp = Button(self.root, text="Click to see tiles", command=self.showTiles)
+        self.coverUp = func.Button(self.root, text="Click to see tiles", command=self.showTiles)
         self.coverUp.place(x=self.x, y=self.y+25, width=300, height=50)
         self.coverUp.lift()
         
@@ -116,9 +121,12 @@ class Player():
         self.coverUp.place_forget()
         
     def getScoreBoard(self, otherName, otherScore):
-        self.player1ScoreLabel = Label(self.root, text="%s's Score: %d" % (self.name, self.score), height=1, width=20, relief=SUNKEN)
-        self.player2ScoreLabel = Label(self.root, text="%s's Score: %d" % (otherName, otherScore), height=1, width=20, relief=SUNKEN)
-        self.tilesLabel = Label(self.root, text = "%d tiles left" % len(distribution), height = 1, width = 20, relief=SUNKEN)
+        self.player1ScoreLabel = func.Label(self.root, text="%s's Score: %d" % (self.name, self.score), height=1, width=15, relief=func.SUNKEN, justify=func.LEFT, anchor=func.W)
+        self.player2ScoreLabel = func.Label(self.root, text="%s's Score: %d" % (otherName, otherScore), height=1, width=15, relief=func.SUNKEN, justify=func.LEFT, anchor=func.W)
+        if self.distribution:
+            self.tilesLabel = func.Label(self.root, text = "%d tiles left" % len(self.distribution), height = 1, width = 15, relief=func.SUNKEN)
+        else:
+            self.tilesLabel = func.Label(self.root, text = "%d tiles left" % len(func.distribution), height = 1, width = 15, relief=func.SUNKEN)
         if self.playerNum == 1:
             self.player1ScoreLabel.place(x=500, y=550)
             self.player2ScoreLabel.place(x=500, y=570)
@@ -133,9 +141,9 @@ class Player():
         self.player1ScoreLabel.config(text = "%s's Score: %d" % (self.name, self.score))
         
     def scoreAnimation(self, scoreLabel, startX, startY, endX, endY, endWidth, endHeight, travelTime = .1, changesPerSecond = 150, schoolComputerChangesPerSecond = 2500):
-        frame = Frame(self.root, relief=RAISED)
+        frame = func.Frame(self.root, relief=func.RAISED)
         frame.place(x=startX, y=startY, height = 25, width = 25)
-        label = Label(frame, text = "+" + str(scoreLabel), bd=1, relief=RAISED, height = 25, width = 25)
+        label = func.Label(frame, text = "+" + str(scoreLabel), bd=1, relief=func.RAISED, height = 25, width = 25)
         label.pack()
 
         frame.lift()
@@ -169,10 +177,18 @@ class Player():
 ##            frame.lift()
 ##            frame.update()
 ##
+        fontsize = 12
+        for i in range(1, 15, 1):
+            self.player1ScoreLabel.config(height=round(i/10), width=round(15*(i/10)), font=("Courier", fontsize+(round((i/10)*3))))
+            self.player1ScoreLabel.place_configure(x=self.scoreX-round((i/10)*25), y=self.scoreY-round((i/10)*25))
+            self.player1ScoreLabel.lift()
+            self.player1ScoreLabel.update()
+            
+            
         for scoreChange in range(scoreLabel):
             self.player1ScoreLabel.config(text = "%s's Score: %d" % (self.name, self.score + scoreChange + 1))
             self.player1ScoreLabel.update()
-            sleep(0.05)
+            func.sleep(0.05)
         frame.destroy()
         label.destroy()
         
@@ -186,7 +202,7 @@ class Player():
         row = 0
         self.movables = []
         for letter in self.rack:
-            self.movables.append(MovingLetter(self.root, letter, row*30+x, y+12.5, self.root))
+            self.movables.append(tiles.MovingLetter(self.root, letter, row*30+x, y+12.5, self.root))
             row += 1
 
         for movable in self.movables:
@@ -213,18 +229,18 @@ class Player():
                                   width = self.screenWidth)
         self.exchangeWindow.wm_title("Exchange")
 
-        label = Label(self.exchangeWindow, text="Drag the letters you wish to exchange to the rack.", relief=RAISED)
+        label = func.Label(self.exchangeWindow, text="Drag the letters you wish to exchange to the rack.", relief=func.RAISED)
         label.place(x=390, y=130, height=50, width=310)
 
         self.exchangeLetters = []
         for letterCount in range(len(self.rack)):
-            self.exchangeLetters.append(MovingExchangeLetter(self.exchangeWindow, self.rack[letterCount], letterCount*30+250, 400, self.exchangeWindow))
+            self.exchangeLetters.append(tiles.MovingExchangeLetter(self.exchangeWindow, self.rack[letterCount], letterCount*30+250, 400, self.exchangeWindow))
         self.exchangeLetters[-1].getExchangeRack()
             
-        button = Button(self.exchangeWindow, text="Back", command=self.exchangeWindow.destroy)
+        button = func.Button(self.exchangeWindow, text="Back", command=self.exchangeWindow.destroy)
         button.place(x=500, y=360)
 
-        exchangeButton = Button(self.exchangeWindow, text="Enter", command=self.getNewTiles)
+        exchangeButton = func.Button(self.exchangeWindow, text="Enter", command=self.getNewTiles)
         exchangeButton.place(x=550, y=230)
         
     def getNewTiles(self, *event):
@@ -279,7 +295,7 @@ class Player():
                         self.board[movable.row][movable.column] = movable.text
                         
                     else:
-                        popup(self.root, "Letters Cannot Overlap", "Letters Cannot Overlap\n\n\n", \
+                        func.popup(self.root, "Letters Cannot Overlap", "Letters Cannot Overlap\n\n\n", \
                               self.screenHeight, self.screenWidth)
                         self.resetBoard()
                         self.enterButton.place(x=self.x+150, y=self.y+100)
@@ -329,7 +345,7 @@ class Player():
                                 specialScores[scoreType] = self.movables[-1].sharedWord
                         self.newGetScore(specialScores)
                         if len(word) == 7:
-                            popup(self.root, "Bingo!!!", "Bingo!!!\n\n\nYou used all your tiles!\n\n\n+50 points!", \
+                            func.popup(self.root, "Bingo!!!", "Bingo!!!\n\n\nYou used all your tiles!\n\n\n+50 points!", \
                                   self.screenHeight, self.screenWidth)
                             #self.score += 50
                             self.scoreAnimation(50, 245, 245, self.scoreX, self.scoreY, 50, 100)
@@ -351,15 +367,15 @@ class Player():
                             
                             self.resetBoard()
                             if self.mode1 == "h" or self.mode1 == "H":
-                                #while popupClosed == 0: pass
+                                #while func.popupClosed == 0: pass
                                 text += "\n\n\nPass Device to " + self.otherName
-                                popup(self.root, "Invalid Word", text, 500, 500)
+                                func.popup(self.root, "Invalid Word", text, 500, 500)
                                 self.endTurn()
 
                             else:
-                                popup(self.root, "Invalid Word", text, 500, 500)
+                                func.popup(self.root, "Invalid Word", text, 500, 500)
                         else:
-                            popup(self.root, boardCheck[1], boardCheck[1], 500, 500)
+                            func.popup(self.root, boardCheck[1], boardCheck[1], 500, 500)
                         self.placeButtons()
                         #self.resetBoard()
                         return False
@@ -368,7 +384,7 @@ class Player():
                     self.placeButtons()
                     return False
         else:
-            popup(self.root, "No tiles played", "No tiles played\n\n\n", 500, 500)
+            func.popup(self.root, "No tiles played", "No tiles played\n\n\n", 500, 500)
             self.placeButtons()
             
     def movableCheck(self, boardToCheck):
@@ -411,12 +427,12 @@ class Player():
 
             for word in otherwords:
                 if otherwords.count(word) > 1:
-                    popup(self.root, "Same Word", "All movables must be in the same word\n\n\n", \
+                    func.popup(self.root, "Same Word", "All movables must be in the same word\n\n\n", \
                           500, 500)
                     
                     return False
             if movablesInWord < sharedWord[1][0]:
-                popup(self.root, "Same Word", "All movables must be in the same word\n\n\n", \
+                func.popup(self.root, "Same Word", "All movables must be in the same word\n\n\n", \
                       500, 500)
                 
                 return False
@@ -635,11 +651,18 @@ class Player():
         self.updateSelfScore()
         
     def drawTiles(self):
-        if len(self.rack) < 7:
-            while len(self.rack) < 7 and len(distribution) > 0:
-                letter = choice(distribution)
-                distribution.remove(letter)
-                self.rack.append(letter.upper())
+        if self.distribution:
+            if len(self.rack) < 7:
+                while len(self.rack) < 7 and len(self.distribution) > 0:
+                    letter = func.choice(self.distribution)
+                    self.distribution.remove(letter)
+                    self.rack.append(letter.upper())
+        else:
+             if len(self.rack) < 7:
+                while len(self.rack) < 7 and len(func.distribution) > 0:
+                    letter = func.choice(func.distribution)
+                    func.distribution.remove(letter)
+                    self.rack.append(letter.upper()) 
             
     def checkWord(self, word):
         #print(word, word.upper(), word.lower())
@@ -788,7 +811,7 @@ class Player():
             except:
                 up = " "
             touching['up'] = up
-            if up.upper() in ascii_uppercase:
+            if up.upper() in func.ascii_uppercase:
                 numTouching += 1
 
         else:
@@ -800,7 +823,7 @@ class Player():
             except:
                 down = " "
             touching['down'] = down
-            if down.upper() in ascii_uppercase:
+            if down.upper() in func.ascii_uppercase:
                 numTouching += 1
 
         else:
@@ -812,7 +835,7 @@ class Player():
             except:
                 right = " "
             touching['right'] = right
-            if right.upper() in ascii_uppercase:
+            if right.upper() in func.ascii_uppercase:
                 numTouching += 1
         else:
             touching['right'] = 'NA'
@@ -823,7 +846,7 @@ class Player():
             except:
                 pass
             touching['left'] = left
-            if left.upper() in ascii_uppercase:
+            if left.upper() in func.ascii_uppercase:
                 numTouching += 1
         else:
             touching['left'] = 'NA'

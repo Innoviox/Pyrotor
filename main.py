@@ -1,11 +1,6 @@
-from games import *
+import games
+import functions as func
 
-#Initialize the root
-
-root = Tk() 
-root.resizable(0,0)
-root.title("Scrabble")
-root.geometry("%dx%d%+d%+d" % (300, 300, 0, 0))
 
 #Initialize variables
 global playing #To tell if the player is currently playing; for the save game function
@@ -61,78 +56,78 @@ def instructions():
     Normal: play until no tiles in bag
     Short: play to 75 points"""
 
-    instructionsWindow = Toplevel(root, height=root.winfo_screenheight(), width=root.winfo_screenwidth())
+    instructionsWindow = func.Toplevel(root, height=root.winfo_screenheight(), width=root.winfo_screenwidth())
     instructionsWindow.title("Instructions")
-    instructionsLabel = Label(instructionsWindow, text=text, justify=LEFT)
+    instructionsLabel = func.Label(instructionsWindow, text=text, justify=LEFT)
     instructionsLabel.place(x=300, y=10, height=750, width=500)
-    closeButton = Button(instructionsLabel, text="Close", command=instructionsWindow.destroy)
+    closeButton = func.Button(instructionsLabel, text="Close", command=instructionsWindow.destroy)
     closeButton.place(x=225, y=600)
     
 def mode1questions():
     text="""Normal: wrong word --> continue
     Hardcore: wrong word --> lose turn."""
-    popup(root, "Mode 1 Description", text, root.winfo_screenheight(), root.winfo_screenwidth())
+    func.popup(func.root, "Mode 1 Description", text, func.root.winfo_screenheight(), func.root.winfo_screenwidth())
     
 def mode2questions():
     text="""Normal: play until bag and one of the player's racks are empty
     Short: play until one person reaches 75 points.\n\n\n
     Note: normal play can take at least an hour, but short play is very fast."""
-    popup(root, "Mode 2 Description", text, root.winfo_screenheight(), root.winfo_screenwidth())
+    func.popup(func.root, "Mode 2 Description", text, func.root.winfo_screenheight(), func.root.winfo_screenwidth())
     
 def play():
     global enterWindow, name1Var, name2Var, mode1Var, mode2Var, playing
 
     playing = 1
-    enterWindow = Toplevel(root, height = root.winfo_screenheight(),\
-                           width = root.winfo_screenwidth())
+    enterWindow = func.Toplevel(func.root, height = func.root.winfo_screenheight(),\
+                           width = func.root.winfo_screenwidth())
     enterWindow.wm_title("Enter Names and Modes")
 
-    label1 = Label(enterWindow, text = "Enter name 1:")
+    label1 = func.Label(enterWindow, text = "Enter name 1:")
     label1.place(x = 50, y = 50, height = 20, width = 95)
-    name1Var = StringVar()
+    name1Var = func.StringVar()
     name1Var.set("Joe")
-    name1 = Entry(enterWindow, textvariable=name1Var)
+    name1 = func.Entry(enterWindow, textvariable=name1Var)
     name1.place(x = 150, y = 50, height = 20, width = 100)
 
-    label2 = Label(enterWindow, text = "Enter name 2:")
+    label2 = func.Label(enterWindow, text = "Enter name 2:")
     label2.place(x = 50, y = 175, height = 20, width = 95)
-    name2Var = StringVar()
+    name2Var = func.StringVar()
     name2Var.set("CPU")
-    name2 = Entry(enterWindow, textvariable=name2Var)
+    name2 = func.Entry(enterWindow, textvariable=name2Var)
     name2.place(x = 150, y = 175, height = 20, width = 100)
 
-    cpuRemindLabel = Label(enterWindow, text = """Note: If name 2 is CPU, the computer
+    cpuRemindLabel = func.Label(enterWindow, text = """Note: If name 2 is CPU, the computer
 will play for that player.""")
     cpuRemindLabel.place(x=50, y=215, height=30, width=250)
  #   cpuRemindLabel.pack()
     
-    mode1Label = Label(enterWindow, text = "Enter mode 1 (normal or hardcore):")
+    mode1Label = func.Label(enterWindow, text = "Enter mode 1 (normal or hardcore):")
     mode1Label.place(x = 50, y = 295, height = 20, width = 210)
-    mode1Var = StringVar()
+    mode1Var = func.StringVar()
     mode1Var.set("normal")
-    mode1 = Entry(enterWindow, textvariable=mode1Var)
+    mode1 = func.Entry(enterWindow, textvariable=mode1Var)
     mode1.place(x = 270, y = 295, height = 20, width = 100)
 
-    mode1Questions = Button(enterWindow, text= "?", command = mode1questions)
+    mode1Questions = func.Button(enterWindow, text= "?", command = mode1questions)
     mode1Questions.place(x=370, y=280, height=50, width=50)
 
-    mode1Switch = Button(enterWindow, text = "Switch", command = mode1VarSwitch)
+    mode1Switch = func.Button(enterWindow, text = "Switch", command = mode1VarSwitch)
     mode1Switch.place(x=430,  y=280, height=50, width=75)
     
-    mode2Label = Label(enterWindow, text = "Enter mode 2 (normal or short):")
+    mode2Label = func.Label(enterWindow, text = "Enter mode 2 (normal or short):")
     mode2Label.place(x = 50, y = 465, height = 20, width = 200)
-    mode2Var = StringVar()
+    mode2Var = func.StringVar()
     mode2Var.set("normal")
-    mode2 = Entry(enterWindow, textvariable=mode2Var)
+    mode2 = func.Entry(enterWindow, textvariable=mode2Var)
     mode2.place(x = 270, y = 465, height = 20, width = 100)
 
-    mode2Questions = Button(enterWindow, text = "?", command = mode2questions)
+    mode2Questions = func.Button(enterWindow, text = "?", command = mode2questions)
     mode2Questions.place(x=370, y=450, height=50, width=50)
 
-    mode2Switch = Button(enterWindow, text = "Switch", command = mode2VarSwitch)
+    mode2Switch = func.Button(enterWindow, text = "Switch", command = mode2VarSwitch)
     mode2Switch.place(x=430, y=450, height=50, width = 75)
     
-    enterButton = Button(enterWindow, text = "Enter data", command = checkData)
+    enterButton = func.Button(enterWindow, text = "Enter data", command = checkData)
     enterButton.place(x = 100, y = 500)
 
 def mode1VarSwitch():
@@ -151,7 +146,7 @@ def check(string, validInputs, popupHeader, popupText):
     if string in validInputs:
         return True
     else:
-        popup(root, popupHeader, popupText, root.winfo_screenheight(), root.winfo_screenwidth())
+        func.popup(root, popupHeader, popupText, root.winfo_screenheight(), root.winfo_screenwidth())
         return False
     
 def checkData():
@@ -159,13 +154,13 @@ def checkData():
         if check(mode2Var.get(), ['n', 's', 'N', 'S', 'normal', 'short'], "Invalid Mode 2", "Invalid Mode 2"):
             playing = 1
             enterWindow.destroy()
-            popup(root, "Pass Device", "Pass Device to %s\n\n" % name1Var.get(), \
+            func.popup(func.root, "Pass Device", "Pass Device to %s\n\n" % name1Var.get(), \
                   500, 500)
             global scrabble
             if name2Var.get() == "CPU":
-                scrabble = GameWithCPU(name1Var.get(), mode1Var.get(), mode2Var.get())
+                scrabble = games.GameWithCPU(name1Var.get(), mode1Var.get(), mode2Var.get())
             else:
-                scrabble = Game(name1Var.get(), name2Var.get(), mode1Var.get(), mode2Var.get())
+                scrabble = games.Game(name1Var.get(), name2Var.get(), mode1Var.get(), mode2Var.get())
             scrabble.startGame()
             scrabble.main()
             playing = 0
@@ -177,25 +172,25 @@ def scrabbleDestroy():
     #and the scrabble comes crashing down
     if playing:
         try:
-            writeAllGames([scrabble, scrabble])
-            scrabble.root.destroy()
+            games.writeAllGames([scrabble, scrabble])
+            games.scrabble.root.destroy()
         except NameError:
             pass
         
 def exitGame():
     scrabbleDestroy()
-    root.destroy()
+    func.root.destroy()
     print("Thanks for playing! Hope you enjoyed! Have a nice day.")
-    end()
+    func.end()
 
 ###############Main interface###############
-root.config(bg=generateRandomColor())
+func.root.config(bg=func.generateRandomColor())
 
-welcomeLabel = Label(root, text = "Welcome to Scrabble in Python!")
-instructionsButton = Button(root, text = "Instructions", command = instructions)
-playButton = Button(root, text = "Play", command = play)
-playSavedButton = Button(root, text = "Play Saved Game", command = playSavedGame)
-exitButton = Button(root, text = "Exit", command = exitGame)
+welcomeLabel = func.Label(func.root, text = "Welcome to Scrabble in Python!")
+instructionsButton = func.Button(func.root, text = "Instructions", command = instructions)
+playButton = func.Button(func.root, text = "Play", command = play)
+playSavedButton = func.Button(func.root, text = "Play Saved Game", command = games.playSavedGame)
+exitButton = func.Button(func.root, text = "Exit", command = exitGame)
 
 welcomeLabel.place(x = 40, y = 0)
 instructionsButton.place(x = 90, y = 50)
@@ -204,4 +199,7 @@ playSavedButton.place(x = 76, y = 150)
 exitButton.place(x = 112, y = 200)
 
 if __name__ == "__main__": #Looks cooler :)
-    root.mainloop()
+    func.root.iconify()
+    func.root.update()
+    func.root.deiconify()
+    func.root.mainloop()

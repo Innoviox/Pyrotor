@@ -1,10 +1,12 @@
-from cpu import *
+import cpu
+import player
+import functions as func
 
 class Game():
     def __init__(self, name1, name2, mode1, mode2):
-         self.mainRoot = Tk()
-         self.root = Toplevel(self.mainRoot)
-         self.root2 = Toplevel(self.mainRoot)
+         self.mainRoot = func.Tk()
+         self.root = func.Toplevel(self.mainRoot)
+         self.root2 = func.Toplevel(self.mainRoot)
          self.mainRoot.withdraw()
 
          self.name1 = name1
@@ -16,24 +18,22 @@ class Game():
          self.gameAlreadyInFile = False
          
     def startGame(self):
-        self.player1 = Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, [])
+        self.player1 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, [], ())
         if self.name2 == "CPU":
-            self.player2 = CPU(self.root2, [])
+            self.player2 = cpu.CPU(self.root2, [])
         else:
-            self.player2 = Player(self.root2, 2, self.name2, 150, 550, self.mode1, self.mode2, [])
+            self.player2 = player.Player(self.root2, 2, self.name2, 150, 550, self.mode1, self.mode2, [], ())
         self.player1.otherName = self.name2
         self.player2.otherName = self.name1
         self.playerGoing = 1
-        
     def doTurn(self):
-        print(self.name2)
         if self.playerGoing == 1:
-            self.root1 = Toplevel(self.mainRoot)
+            self.root1 = func.Toplevel(self.mainRoot)
             self.player1.reRoot(self.root1)
             self.player1.startTurn(self.player2.name, self.player2.score)
             self.player2.board = self.player1.board
             self.playerGoing = 2
-            popup(self.mainRoot, "Pass Device", "Pass Device to %s\n\n" % self.player2.name, 500, 500)
+            func.popup(self.mainRoot, "Pass Device", "Pass Device to %s\n\n" % self.player2.name, 500, 500)
         else:
             if self.player2.name == "CPU":
                 self.playerGoing = 1
@@ -41,12 +41,12 @@ class Game():
                 self.player2.turnrotation = 0
                 self.player1.board = self.player2.board
             else:
-                self.root2 = Toplevel(self.mainRoot)
+                self.root2 = func.Toplevel(self.mainRoot)
                 self.player2.reRoot(self.root2)
                 self.player2.startTurn(self.player1.name, self.player1.score)
                 self.player1.board = self.player2.board
                 self.playerGoing = 1
-                popup(self.mainRoot, "Pass Device", "Pass Device to %s\n\n" % self.player1.name, 500, 500)
+                func.popup(self.mainRoot, "Pass Device", "Pass Device to %s\n\n" % self.player1.name, 500, 500)
         if self.gameAlreadyInFile is False:
             writeGameToFile(self, gameNum = self.gameNum, gameAlreadyInFile = False)
             self.gameAlreadyInFile = True
@@ -56,17 +56,22 @@ class Game():
     def main(self):
         #self.startGame()
         if self.mode2.lower() == "n":
-            while len(distribution) > 0 or (len(self.player1.rack) > 0 and len(self.player2.rack) > 0):
-                self.doTurn()
-                #self.updateScores()
+            if self.player1.distribution:
+                while len(self.player1.distribution) > 0 or (len(self.player1.rack) > 0 and len(self.player2.rack) > 0):
+                    self.doTurn()
+                    #self.updateScores()
+            else:
+                while len(func.distribution) > 0 or (len(self.player1.rack) > 0 and len(self.player2.rack) > 0):
+                    self.doTurn()
+                    #self.updateScores()
         else:
             while self.player1.score < 75 and self.player2.score < 75:
                 self.doTurn()
                 #self.updateScores()
         if self.player1.score > self.player2.score:
-            popup(root, "Player 1 Won", "Player 1 Won", self.player1.screenHeight, self.player1.screenWidth)
+            func.popup(func.root, "Player 1 Won", "Player 1 Won", self.player1.screenHeight, self.player1.screenWidth)
         else:
-            popup(root, "Player 2 Won", "Player 2 Won", self.player1.screenHeight, self.player1.screenWidth)
+            func.popup(func.root, "Player 2 Won", "Player 2 Won", self.player1.screenHeight, self.player1.screenWidth)
         self.player1.root.destroy()
         self.player2.root.destroy()
         self.mainRoot.destroy()
@@ -77,20 +82,20 @@ class GameWithCPU(Game):
         super(GameWithCPU, self).__init__(name1, name2, mode1, mode2)
         
     def startGame(self):
-        self.player1 = Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, [])
-        self.player2= CPU(self.root, [])
+        self.player1 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, [], ())
+        self.player2= cpu.CPU(self.root, [], ())
         self.player1.otherName = self.name2
         self.player2.otherName = self.name1
         self.playerGoing = 1
-        
+
     def doTurn(self):
         if self.playerGoing == 1:
-            self.root1 = Toplevel(self.mainRoot)
+            self.root1 = func.Toplevel(self.mainRoot)
             self.player1.reRoot(self.root1)
             self.player1.startTurn(self.player2.name, self.player2.score)
             self.player2.board = self.player1.board
             self.playerGoing = 2
-            #popup(self.mainRoot, "Pass Device", "Pass Device to %s\n\n" % self.player2.name, 500, 500)
+            #func.popup(self.mainRoot, "Pass Device", "Pass Device to %s\n\n" % self.player2.name, 500, 500)
         else:
             self.playerGoing = 1
             self.player2.takeTurn()
@@ -105,17 +110,22 @@ class GameWithCPU(Game):
     def main(self):
         #self.startGame()
         if self.mode2.lower() == "n":
-            while len(distribution) > 0 or (len(self.player1.rack) > 0 and len(self.player2.rack) > 0):
-                self.doTurn()
-                #self.updateScores()
+            if self.player1.distribution:
+                while len(self.player1.distribution) > 0 or (len(self.player1.rack) > 0 and len(self.player2.rack) > 0):
+                    self.doTurn()
+                    #self.updateScores()
+            else:
+                while len(func.distribution) > 0 or (len(self.player1.rack) > 0 and len(self.player2.rack) > 0):
+                    self.doTurn()
+                    #self.updateScores()
         else:
             while self.player1.score < 75 and self.player2.score < 75:
                 self.doTurn()
                 #self.updateScores()
         if self.player1.score > self.player2.score:
-            popup(root, "Player 1 Won", "Player 1 Won", self.player1.screenHeight, self.player1.screenWidth)
+            func.popup(func.root, "Player 1 Won", "Player 1 Won", self.player1.screenHeight, self.player1.screenWidth)
         else:
-            popup(root, "Player 2 Won", "Player 2 Won", self.player1.screenHeight, self.player1.screenWidth)
+            func.popup(func.root, "Player 2 Won", "Player 2 Won", self.player1.screenHeight, self.player1.screenWidth)
         self.player1.root.destroy()
         self.player2.root.destroy()
         self.mainRoot.destroy()
@@ -124,9 +134,9 @@ class GameWithCPU(Game):
 ###############Start of algorithms for saving games: SavedGame, writeVars, writeAllGames, writeGameToFile, setFileTextToList, playSavedGame.###############
 class SavedGame(Game):
     def __init__(self, root, file="savedGame.txt"):
-        self.root = Toplevel(root)
+        self.root = func.Toplevel(root)
         self.root.withdraw()
-        self.gameWindow = Toplevel(self.root, height = root.winfo_screenheight(), width = root.winfo_screenwidth())
+        self.gameWindow = func.Toplevel(self.root, height = root.winfo_screenheight(), width = root.winfo_screenwidth())
         self.gameWindow.resizable(0,0)
         self.gameWindow.wm_title("Saved Games")
         gameTexts = open(file).read()
@@ -148,11 +158,11 @@ class SavedGame(Game):
         %s's score: %s
         Mode 1: %s
         Mode 2: %s""" % (fullText[0], fullText[1], fullText[2], fullText[3], fullText[4], fullText[5])
-                    gameLabel = Label(self.gameWindow, text=text, height=4, width=20, relief=RAISED) #Definetly changeable
+                    gameLabel = func.Label(self.gameWindow, text=text, height=4, width=20, relief=func.RAISED) #Definetly changeable
                     gameLabels.append(gameLabel)
                     gameLabels[-1].place(x=0, y=column * 100)
                     
-                    gameButton = Button(self.gameWindow, text="Play!", height=1, width=5, \
+                    gameButton = func.Button(self.gameWindow, text="Play!", height=1, width=5, \
                                         command=lambda game=gameText: self.play(game))
                     gameButtons.append(gameButton)
                     gameButtons[-1].place(x=350, y=(gameTexts.index(gameText)*100))
@@ -224,9 +234,11 @@ class SavedGame(Game):
         self.gameAlreadyInFile = True
         gameVars = self.setGameVars(gameText)
         global distribution
-        distribution = gameVars[10]
+        distribution = gameVars[10]#.split(",")
+        self.distribution = distribution
+        print(self.distribution)
         #print(distribution)
-        popup(root, "Pass Device", "Pass Device to %s\n\n" % [gameVars[0], gameVars[2]][gameVars[9]-1], 500, 500)
+        func.popup(func.root, "Pass Device", "Pass Device to %s\n\n" % [gameVars[0], gameVars[2]][gameVars[9]-1], 500, 500)
         super(SavedGame, self).__init__(gameVars[0], gameVars[2], gameVars[4], gameVars[5])
         self.gameWindow.destroy()
         self.startGame(gameVars[7], gameVars[8])
@@ -238,18 +250,135 @@ class SavedGame(Game):
         playing = 0
         
     def startGame(self, rack1, rack2):
-        self.player1 = Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, rack1)
+        print(type(self.distribution))
+        self.player1 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, rack1, self.distribution)
         if self.name2 == "CPU":
-            self.player2 = CPU(self.root2, [])
+            self.player2 = cpu.CPU(self.root2, [], self.distribution)
         else:
-            self.player2 = Player(self.root2, 2, self.name2, 150, 550, self.mode1, self.mode2, [])
+            self.player2 = player.Player(self.root2, 2, self.name2, 150, 550, self.mode1, self.mode2, [], self.distribution)
         self.playerGoing = 1
         
     def updateScores(self):
         super(SavedGame, self).updateScores()
         
     def doTurn(self):
-        super(SavedGame, self).doTurn()
-        
+        if self.playerGoing == 1:
+            self.root1 = func.Toplevel(self.mainRoot)
+            self.player1.reRoot(self.root1)
+            self.player1.startTurn(self.player2.name, self.player2.score)
+            self.player2.board = self.player1.board
+            self.playerGoing = 2
+            func.popup(self.mainRoot, "Pass Device", "Pass Device to %s\n\n" % self.player2.name, 500, 500)
+            self.player2.distribution = self.player1.distribution
+        else:
+            if self.player2.name == "CPU":
+                self.playerGoing = 1
+                self.player2.takeTurn()
+                self.player2.turnrotation = 0
+                self.player1.board = self.player2.board
+            else:
+                self.root2 = func.Toplevel(self.mainRoot)
+                self.player2.reRoot(self.root2)
+                self.player2.startTurn(self.player1.name, self.player1.score)
+                self.player1.board = self.player2.board
+                self.playerGoing = 1
+                func.popup(self.mainRoot, "Pass Device", "Pass Device to %s\n\n" % self.player1.name, 500, 500)
+            self.player1.distribution = self.player2.distribution
+        if self.gameAlreadyInFile is False:
+            writeGameToFile(self, gameNum = self.gameNum, gameAlreadyInFile = False)
+            self.gameAlreadyInFile = True
+        else:
+            writeGameToFile(self, gameNum = self.gameNum, gameAlreadyInFile = True)
+
     def main(self):
         super(SavedGame, self).main()
+def playSavedGame(file="savedGame.txt"):
+    if len(open(file).read()) > 0:
+        playing = 1
+        global scrabble
+        scrabble = SavedGame(func.root)
+        playing = 0
+    else:
+        func.popup(func.root, "No saved games", "No saved games\n\n\n", root.winfo_screenheight(), root.winfo_screenwidth())
+        
+def writeVars(game, file):
+    file.write("New Game\n")
+    
+    file.write("%s %d\n" % (game.player1.name, game.player1.score))
+    #file.write("%s %d\n" % (game.player2.name, game.player2.score))
+    file.write("%s %d\n" % (game.player2.name, game.player2.score))
+    if game.player1.distribution:
+        for letter in game.player1.distribution:
+            file.write(letter)
+            file.write(",")
+    else:
+        for letter in func.distribution:
+            file.write(letter)
+            file.write(",")
+    file.write("\n")
+    file.write("%s %s %d\n" % (game.mode1, game.mode2, game.playerGoing))
+    #print(len(distribution))
+    game.player1.drawTiles()
+    game.player2.drawTiles()
+    #print(len(distribution))
+    for letter in game.player1.rack:
+        file.write(letter)
+    file.write("\n")
+    for letter in game.player2.rack:
+        file.write(letter)
+    file.write("\n")
+    for row in [game.player1.board, game.player2.board][game.playerGoing-1]:
+            for column in row:
+                    file.write(column + "|")
+            file.write("\n")
+            
+def setFileTextToList(newTextList, file="savedGame.txt"):
+    with open(file, "w"):
+        pass
+    file = open(file, "w")
+    for text in newTextList:
+        file.write(text)
+        file.write("\n")
+        
+def writeAllGames(games, file="savedGame.txt"):
+    for game in games:
+        writeGameToFile(game, gameNum = game.gameNum, gameAlreadyInFile = game.gameAlreadyInFile, file = file)
+        
+def writeGameToFile(game, gameNum = -1, gameAlreadyInFile = False, file="savedGame.txt"):
+    if not gameAlreadyInFile:
+        file = open(file, "w")
+        writeVars(game, file)
+    else:
+        file = open(file, "r+")
+        fileText = file.read().split("New Game\n")
+        #print(fileText)
+        text = "New Game\n"
+        text += "%s %d\n%s %d\n" % (game.player1.name, game.player1.score, game.player2.name, game.player2.score)
+        #print(len(distribution))
+        if game.player1.distribution:
+            for letter in game.player1.distribution:
+                text += letter
+                text += ","
+        else:
+            for letter in func.distribution:
+                text += letter
+                text += ","
+        #print(len(distribution))
+        text += "\n"
+        text += "%s %s %d\n" % (game.mode1, game.mode2, game.playerGoing)
+        game.player1.drawTiles()
+        game.player2.drawTiles()
+        for letter in game.player1.rack:
+            text += letter
+        text += "\n"
+        for letter in game.player2.rack:
+            text += letter
+        text += "\n"
+        for row in [game.player1.board, game.player2.board][game.playerGoing-1]:
+            for column in row:
+                text += column
+                text += "|"
+            text += "\n"
+        #print(fileText, gameNum)
+        fileText[gameNum] = text
+        setFileTextToList(fileText)

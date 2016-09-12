@@ -1,4 +1,4 @@
-from functions import *
+import functions as func
 
 class MovingLetter():
     """Base tile class. 31x31 frame, moves with mouse. Main graphics of the entire game; can create board."""
@@ -38,7 +38,7 @@ class MovingLetter():
         self.origText = text
         if text == "?": #Blank tile
             self.blankChosen = 0
-            self.blankWindow = Toplevel(self.root)
+            self.blankWindow = func.Toplevel(self.root)
             self.blankWindow.geometry("%dx%d%+d%+d" % (self.root.winfo_screenwidth(), self.root.winfo_screenheight(), 0, 0))
             self.blankWindow.resizable(0, 0)
             self.blankWindow.withdraw()
@@ -51,13 +51,13 @@ class MovingLetter():
 
     def getFrame(self, size):
         """Gets a frame of size {size} (normally 31) with text {self.text + subscirpt of score}"""
-        self.frame = Frame(self.rackFrame, bd=1, relief=SUNKEN)
+        self.frame = func.Frame(self.rackFrame, bd=1, relief=func.SUNKEN)
         self.frame.place(x=self.x, y=self.y, width=size, height=size)
 
-        self.label = Label(self.frame, bd=1, relief=RAISED, \
+        self.label = func.Label(self.frame, bd=1, relief=func.RAISED, \
                            text=self.text+self.getSubscript(self.scores[self.text.lower()]),  #Puts the points for the letter on the label\
                            height=size, width=size, bg="yellow")
-        self.label.pack(fill=X, padx=1, pady=1)
+        self.label.pack(fill=func.X, padx=1, pady=1)
 
         self.label.bind('<ButtonPress-1>', self.startMoveWindow)
         self.label.bind('<B1-Motion>', self.MoveWindow)
@@ -139,13 +139,13 @@ class MovingLetter():
         #So it can't go onto a tile already played
         if coords:
             if self.board[self.labels_positionList[squarePos][0]][self.labels_positionList[squarePos][1]] in \
-                                   ascii_uppercase or self.formatPos(squarePos) in \
+                                   func.ascii_uppercase or self.formatPos(squarePos) in \
                                                    [movable.hoveringOver for movable in self.movables]:
                 return False
             else:
                 return True
         else:
-            if self.board[squarePos[0]][squarePos[1]] in ascii_uppercase or self.formatPos(squarePos) in \
+            if self.board[squarePos[0]][squarePos[1]] in func.ascii_uppercase or self.formatPos(squarePos) in \
                                                    [movable.hoveringOver for movable in self.movables]:
                 return False
             else:
@@ -262,7 +262,7 @@ class MovingLetter():
                      "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K ", "L ", "M ", "N ", "O ", \
                      "*", " "]
         colors = {"TWS":"red", "DWS":"pink", "TLS":"light green", "DLS":"light blue", "*":"pink"}
-        self.boardFrame = Frame(self.root, bd=1, relief=SUNKEN)
+        self.boardFrame = func.Frame(self.root, bd=1, relief=func.SUNKEN)
         self.boardFrame.place(x=50, y=50, width=497, height = 497)
         labels = list()
         squares = list()
@@ -271,25 +271,25 @@ class MovingLetter():
             for j in range(16):
                 label = self.board[j][i]
                 if label in self.extraList:
-                    entry = Frame(self.boardFrame, bd=1, relief=RAISED)
+                    entry = func.Frame(self.boardFrame, bd=1, relief=func.RAISED)
                     entry.place(x=(i*31), y=(j*31), width=31, height=31)
-                    labels.append(Label(entry, text = label,
+                    labels.append(func.Label(entry, text = label,
                                         height = 31, width = 31))
                     if label in colors.keys():
                         labels[-1].config(bg=colors[label])
                         
                     labels[-1].pack()
                 else:
-                    frame = Frame(self.boardFrame, bd=1, relief=RAISED)
+                    frame = func.Frame(self.boardFrame, bd=1, relief=func.RAISED)
                     frame.place(x=(i*31), y=(j*31), width=31, height=31)
-                    entry = Frame(self.boardFrame, bd=1, relief=SUNKEN)
+                    entry = func.Frame(self.boardFrame, bd=1, relief=func.SUNKEN)
                     entry.place(x=(i*31) + 3, y=(j*31) + 3, width=25, height=25)
-                    squares.append(Label(entry, bd = 1, text=label+self.getSubscript(self.scores[label.lower()]),
-                                         height=25, width=25, relief=RAISED))
-                    squares[-1].pack(fill=X, padx=1, pady=1)
+                    squares.append(func.Label(entry, bd = 1, text=label+self.getSubscript(self.scores[label.lower()]),
+                                         height=25, width=25, relief=func.RAISED))
+                    squares[-1].pack(fill=func.X, padx=1, pady=1)
                     entry.lift()
                     
-        self.helpLabel = Label(self.root, text = "Note: For best tile placement, \naim for below and to the right of the square.", )
+        self.helpLabel = func.Label(self.root, text = "Note: For best tile placement, \naim for below and to the right of the square.", )
         self.helpLabel.place(x=50, y=10, height=35, width=497)
         
     def returnToOrig(self):
@@ -304,15 +304,15 @@ class MovingLetter():
             
     def chooseBlank(self):
         self.blankWindow.deiconify()
-        chooseLabel = Label(self.blankWindow, text = "Choose the tile you want your blank to be.")
+        chooseLabel = func.Label(self.blankWindow, text = "Choose the tile you want your blank to be.")
         chooseLabel.place(x = 400, y = 200, width = 300, height = 100)
-        self.choiceWindow = Frame(self.blankWindow)
+        self.choiceWindow = func.Frame(self.blankWindow)
         self.choiceWindow.place(x=400, y=400, width=500, height = 500)
         buttons = []
         row = 1
         column = 1
-        for letter in ascii_uppercase:
-            button = Button(self.choiceWindow, text = letter,
+        for letter in func.ascii_uppercase:
+            button = func.Button(self.choiceWindow, text = letter,
                             command = lambda letter=letter: self.setBlank(letter), \
                             height = 1, width = 1)
             buttons.append(button)

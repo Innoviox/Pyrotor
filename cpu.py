@@ -1,8 +1,13 @@
-from player import *
+import player
+import functions as func
 
-class CPU(Player):
-    def __init__(self, root, rack):
+class CPU(player.Player):
+    def __init__(self, root, rack, distribution):
         self.root = root
+        if distribution != ():
+           self.distribution = distribution
+        else:
+            self.distribution = False
         self.name = "CPU"
         self.extraList = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", \
              "TWS", "DWS", "TLS", "DLS", \
@@ -50,12 +55,12 @@ class CPU(Player):
         for i in self.ospd:
             ospdcomp += i
 
-        for letter in ascii_uppercase:
+        for letter in func.ascii_uppercase:
             self.valuations[letter] = ospdcomp.count(letter)
     def getAllCorrectCombinations(self, iterable, maxDepth):
         allWords = []
         for depth in range(0, maxDepth + 1):
-            for word in permutations(iterable, depth):
+            for word in func.permutations(iterable, depth):
                 allWords.append("".join(word))
 
         allWords.pop(0)
@@ -83,11 +88,18 @@ class CPU(Player):
         super(CPU, self).addKey(dictToCheck, key, value)
         
     def drawTiles(self):
-        if len(self.rack) < 7:
-            while len(self.rack) < 7 and len(distribution) > 0:
-                letter = choice(distribution)
-                distribution.remove(letter)
-                self.rack.append(letter.upper())
+        if self.distribution:
+            if len(self.rack) < 7:
+                while len(self.rack) < 7 and len(self.distribution) > 0:
+                    letter = func.choice(self.distribution)
+                    self.distribution.remove(letter)
+                    self.rack.append(letter.upper())
+        else:
+             if len(self.rack) < 7:
+                while len(self.rack) < 7 and len(func.distribution) > 0:
+                    letter = func.choice(func.distribution)
+                    func.distribution.remove(letter)
+                    self.rack.append(letter.upper())          
     #Here's some functions that are in the player class but unfortunately could
     #not be supered because they had to be changed slightly
     def checkWholeBoard(self, boardToCheck, isFirstTurn):
@@ -154,7 +166,7 @@ class CPU(Player):
             except:
                 up = "NA"
             touching['up'] = up
-            if up.upper() in ascii_uppercase:
+            if up.upper() in func.ascii_uppercase:
                 numTouching += 1
 
         else:
@@ -166,7 +178,7 @@ class CPU(Player):
             except:
                 down = "NA"
             touching['down'] = down
-            if down.upper() in ascii_uppercase:
+            if down.upper() in func.ascii_uppercase:
                 numTouching += 1
 
         else:
@@ -178,7 +190,7 @@ class CPU(Player):
             except:
                 right = "NA"
             touching['right'] = right
-            if right.upper() in ascii_uppercase:
+            if right.upper() in func.ascii_uppercase:
                 numTouching += 1
         else:
             touching['right'] = 'NA'
@@ -189,7 +201,7 @@ class CPU(Player):
             except:
                 left = "NA"
             touching['left'] = left
-            if left.upper() in ascii_uppercase:
+            if left.upper() in func.ascii_uppercase:
                 numTouching += 1
         else:
             touching['left'] = 'NA'
@@ -208,11 +220,11 @@ class CPU(Player):
         else:
             self.isFirstTurn = False
             
-        print("Loading...This step will take approximately", round(uniform(0.9, 1.2), 4), "seconds.")
-        a = time()
+        print("Loading...This step will take approximately", round(func.uniform(0.9, 1.2), 4), "seconds.")
+        a = func.time()
         allMoves = []
         allWords = self.removeDuplicates(self.getAllCorrectCombinations(self.rack, 7))
-        print("That step actually took", time() - a, "seconds.")
+        print("That step actually took", func.time() - a, "seconds.")
         boards = 0
         possboards = 0
         longwords = []
@@ -232,7 +244,7 @@ class CPU(Player):
                         longwords.append(word)
             
             print("Generating...This step will take approximately", round(possboards * 0.0023, 4), "seconds.")
-            a = time()
+            a = func.time()
             for word in longwords:
                     for row in range(1, len(self.board)):
                         for column in range(1, len(self.board[row])):
@@ -243,7 +255,7 @@ class CPU(Player):
                                         qbox = {"word":word, "board":nbo, "place":[row, column], "direction":direction}
                                         allMoves.append(qbox)
                                         self.getScore(qbox)
-            print("That step actually took", time() - a, "seconds.")
+            print("That step actually took", func.time() - a, "seconds.")
 
             return allMoves
 
@@ -294,7 +306,7 @@ class CPU(Player):
         return "Down"
 
     def placonv(self, place):
-        return "Row: %d\nColumn: %s" % (int(place[0]), ascii_uppercase[int(place[1])-1])
+        return "Row: %d\nColumn: %s" % (int(place[0]), func.ascii_uppercase[int(place[1])-1])
 
     def rackonv(self):
 ##        pass
@@ -318,7 +330,7 @@ class CPU(Player):
                         j = "  "
                     else:
                         j = "   "
-                if j[0] in ascii_uppercase and len(j) < 3:
+                if j[0] in func.ascii_uppercase and len(j) < 3:
                     j = " " + j[0] + " "
                 text += j
                 text += "|"
@@ -343,7 +355,7 @@ class CPU(Player):
 
             if direction == 'A':
                 try:
-                    if board[row][column] not in ascii_uppercase: #checks if space isn't letter
+                    if board[row][column] not in func.ascii_uppercase: #checks if space isn't letter
                         if board[row][column] in self.scoreList:
                             pass 
                         board[row][column] = word[num]
@@ -355,7 +367,7 @@ class CPU(Player):
                     return False
             else:
                 try:
-                    if board[row][column] not in ascii_uppercase:
+                    if board[row][column] not in func.ascii_uppercase:
                         board[row][column] = word[num]
                         row += 1
                     else:
@@ -456,10 +468,10 @@ class CPU(Player):
                 specialScores["DLS"].append(moveAtts["word"][letter])
             if moveAtts["direction"] == "A":
                 spAtts = self.getAttributes("%d,%d" % (row, column), moveAtts["board"])
-                if spAtts["up"] in ascii_uppercase:
+                if spAtts["up"] in func.ascii_uppercase:
                     nrow = row
                     word = spAtts["text"]
-                    while spAtts["up"] in ascii_uppercase:
+                    while spAtts["up"] in func.ascii_uppercase:
                         word += spAtts["up"]
                         if nrow + 1 < 16:
                             nrow += 1
@@ -471,10 +483,10 @@ class CPU(Player):
                     wordsToScore.append(word)
                     
                 spAtts = self.getAttributes("%d,%d" % (row, column), moveAtts["board"])
-                if spAtts["down"] in ascii_uppercase:
+                if spAtts["down"] in func.ascii_uppercase:
                     nrow = row
                     word = spAtts["text"]
-                    while spAtts["down"] in ascii_uppercase:
+                    while spAtts["down"] in func.ascii_uppercase:
                         word += spAtts["down"]
                         if nrow + 1 < 16:
                             nrow += 1
@@ -487,10 +499,10 @@ class CPU(Player):
                 column += 1
             else:
                 spAtts = self.getAttributes("%d,%d" % (row, column), moveAtts["board"])
-                if spAtts["right"] in ascii_uppercase:
+                if spAtts["right"] in func.ascii_uppercase:
                     ncol = column
                     word = spAtts["text"]
-                    while spAtts["right"] in ascii_uppercase:
+                    while spAtts["right"] in func.ascii_uppercase:
                         word += spAtts["right"]
                         if ncol + 1 < 16:
                             ncol += 1
@@ -502,10 +514,10 @@ class CPU(Player):
                     wordsToScore.append(word)
                     
                 spAtts = self.getAttributes("%d,%d" % (row, column), moveAtts["board"])
-                if spAtts["left"] in ascii_uppercase:
+                if spAtts["left"] in func.ascii_uppercase:
                     ncol = column
                     word = spAtts["text"]
-                    while spAtts["left"] in ascii_uppercase:
+                    while spAtts["left"] in func.ascii_uppercase:
                         word += spAtts["left"]
                         if ncol + 1 < 16:
                             ncol += 1
