@@ -59,25 +59,34 @@ class CPU(player.Player):
             self.valuations[letter] = ospdcomp.count(letter)
     def getAllCorrectCombinations(self, iterable, maxDepth):
         allWords = []
-        for depth in range(3s, maxDepth + 1): #only needs to get length 3 and above
+        wordsWithBlanks = {}
+        alreadyChecked = []
+        for depth in range(4, maxDepth + 1): #only needs to get length 3 and above
             for word in func.permutations(iterable, depth):
                 allWords.append("".join(word))
-        for i in range(len(allWords)):
-            word = allWords[i]
+        naw = allWords[:]
+        for i in range(len(naw)):
+            word = naw[i]
             if "?" in word:
                 allWords.remove(word)
                 for l in func.ascii_uppercase:
                     nWord = list(word)
-                    nWord[nWord.index("?")] = l
+                    q = nWord.index("?")
+                    nWord[q] = l
                     nWord = self.tostr(nWord)
-                    allWords.append(nWord)
+                    if self.checkWord(nWord):
+                        allWords.append(nWord)
+                        alreadyChecked.append(nWord)
+                        wordsWithBlanks[nWord] = q
         allWords.pop(0)
         correctWords = []
         for word in allWords:
-            if self.checkWord(word):
+            if word in alreadyChecked:
+                correctWords.append(word)
+            elif self.checkWord(word):
                 correctWords.append(word)
 
-        return correctWords
+        return correctWords#, wordsWithBlanks
     def tostr(self, l):
         h = ""
         for i in l: h += i
@@ -613,6 +622,6 @@ class CPU(player.Player):
                 nar.remove(self.rack[index])
         self.rack = nar[:]
         self.drawTiles()
-#c = CPU(func.root, [], func.distribution)
-#c.rack = ["A", "G", "C", "P", "E", "N", "?"]
-#print(c.getAllCorrectCombinations(c.rack, 7))
+c = CPU(func.root, [], func.distribution)
+c.rack = ["A", "G", "C", "P", "E", "N", "?"]
+print(c.getAllCorrectCombinations(c.rack, 7))
