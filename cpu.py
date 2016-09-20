@@ -622,6 +622,6 @@ class CPU(player.Player):
                 nar.remove(self.rack[index])
         self.rack = nar[:]
         self.drawTiles()
-c = CPU(func.root, [], func.distribution)
-c.rack = ["A", "G", "C", "P", "E", "N", "?"]
-print(c.getAllCorrectCombinations(c.rack, 7))
+#c = CPU(func.root, [], func.distribution)
+#c.rack = ["A", "G", "C", "P", "E", "N", "?"]
+#print(c.getAllCorrectCombinations(c.rack, 7))
