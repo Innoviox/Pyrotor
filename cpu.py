@@ -50,7 +50,7 @@ class CPU(player.Player):
             popup(self.root, "Dictionary File Not Found", "Dictionary File Not Found\n\n\n", 500, 500)
             end()
         self.turnrotation = 0
-        self.valuations = {}
+        self.valuations = {"?":0}
         ospdcomp=""
         for i in self.ospd:
             ospdcomp += i
@@ -59,10 +59,18 @@ class CPU(player.Player):
             self.valuations[letter] = ospdcomp.count(letter)
     def getAllCorrectCombinations(self, iterable, maxDepth):
         allWords = []
-        for depth in range(0, maxDepth + 1):
+        for depth in range(3s, maxDepth + 1): #only needs to get length 3 and above
             for word in func.permutations(iterable, depth):
                 allWords.append("".join(word))
-
+        for i in range(len(allWords)):
+            word = allWords[i]
+            if "?" in word:
+                allWords.remove(word)
+                for l in func.ascii_uppercase:
+                    nWord = list(word)
+                    nWord[nWord.index("?")] = l
+                    nWord = self.tostr(nWord)
+                    allWords.append(nWord)
         allWords.pop(0)
         correctWords = []
         for word in allWords:
@@ -70,7 +78,10 @@ class CPU(player.Player):
                 correctWords.append(word)
 
         return correctWords
-    
+    def tostr(self, l):
+        h = ""
+        for i in l: h += i
+        return h
     def checkWord(self, word):
         if len(word) > 1:
             try:
@@ -602,3 +613,6 @@ class CPU(player.Player):
                 nar.remove(self.rack[index])
         self.rack = nar[:]
         self.drawTiles()
+#c = CPU(func.root, [], func.distribution)
+#c.rack = ["A", "G", "C", "P", "E", "N", "?"]
+#print(c.getAllCorrectCombinations(c.rack, 7))
