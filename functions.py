@@ -1,4 +1,6 @@
 #Import necessary functions
+#This game needs 21 functions, classes, 
+#and attributes from across 6 modules.
 from tkinter import Frame
 from tkinter import Label
 from tkinter import Button
@@ -11,24 +13,29 @@ from tkinter import RAISED
 from tkinter import X
 from tkinter import W
 from tkinter import LEFT
+
 from random import randint
 from random import choice
 from random import shuffle
 from random import uniform
+
 from string import ascii_uppercase
+
 from time import sleep
 from time import time
+
 from sys import exit as end
+
 from itertools import permutations
 
-#import games
 #Initialize the root
-
 root = Tk() 
-root.resizable(0,0)
-root.title("Scrabble")
-root.geometry("%dx%d%+d%+d" % (300, 300, 0, 0))
-#Define useful functions: popup, destroyPopup, and generateRandomColor.
+
+def setup():
+    root.resizable(0,0)
+    root.title("Scrabble")
+    root.geometry("%dx%d%+d%+d" % (300, 300, 0, 0))
+#Define useful functions
 def popup(root, header, text, windowHeight, windowWidth, closable = True, closeTime = 2, winx=0, winy=0):
     """Makes a new window pop up with a text. Very helpful. Note: closable=False does not work."""
     global popupClosed, window
@@ -60,4 +67,5 @@ def generateRandomColor():
 
 
 
-distribution = ["a", "a", "a", "a", "a", "a", "a", "a", "a", "b", "b", "c", "c", "d", "d", "d", "d", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "f", "f", "g", "g", "g", "h", "h", "i", "i", "i", "i", "i", "i", "i", "i", "i", "j", "k", "l", "l", "l", "l", "m", "m", "n", "n", "n", "n", "n", "n", "o", "o", "o", "o", "o", "o", "o", "o", "p", "p", "q", "r", "r", "r", "r", "r", "r","s", "s", "s", "s", "t", "t", "t", "t", "t", "t", "u", "u", "u", "u", "v", "v", "w", "w", "x", "y", "y", "z"]
+
+distribution = ["a", "a", "a", "a", "a", "a", "a", "a", "a", "b", "b", "c", "c", "d", "d", "d", "d", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "f", "f", "g", "g", "g", "h", "h", "i", "i", "i", "i", "i", "i", "i", "i", "i", "j", "k", "l",    "l", "l", "l", "m", "m", "n", "n", "n", "n", "n", "n", "o", "o", "o", "o", "o", "o", "o", "o", "p", "p", "q", "r", "r", "r", "r", "r", "r","s", "s", "s", "s", "t", "t", "t", "t", "t", "t", "u", "u", "u", "u", "v", "v", "w", "w", "x", "y", "y", "z"]

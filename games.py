@@ -77,6 +77,8 @@ class Game():
         self.mainRoot.destroy()
 
 
+        
+        
 class GameWithCPU(Game):
     def __init__(self, name1, mode1, mode2, name2="CPU"):
         super(GameWithCPU, self).__init__(name1, name2, mode1, mode2)
@@ -132,6 +134,8 @@ class GameWithCPU(Game):
 ###############End of class definitions.###############
         
 ###############Start of algorithms for saving games: SavedGame, writeVars, writeAllGames, writeGameToFile, setFileTextToList, playSavedGame.###############
+
+
 class SavedGame(Game):
     def __init__(self, root, file="savedGame.txt"):
         self.root = func.Toplevel(root)
@@ -291,8 +295,11 @@ class SavedGame(Game):
             writeGameToFile(self, gameNum = self.gameNum, gameAlreadyInFile = True)
 
     def main(self):
-        super(SavedGame, self).main()
+        super(SavedGame, self).main()   
+        
+        
 def playSavedGame(file="savedGame.txt"):
+    
     if len(open(file).read()) > 0:
         playing = 1
         global scrabble

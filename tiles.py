@@ -4,21 +4,21 @@ class MovingLetter():
     """Base tile class. 31x31 frame, moves with mouse. Main graphics of the entire game; can create board."""
     def __init__(self, root, text, x, y, frame):
         self.board = [[" ", "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K ", "L ", "M ", "N ", "O "],
-    ['01', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', 'TWS', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS'],
-    ['02', ' ', 'DWS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'DWS', ' '],
-    ['03', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' '],
-    ['04', 'DLS', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' ', 'DLS'],
-    ['05', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' '],
-    ['06', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' '],
-    ['07', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', ' '],
-    ['08', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', '*', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS'],
-    ['09', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', ' '],
-    ['10', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' '],
-    ['11', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' '],
-    ['12', 'DLS', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' ', 'DLS'],
-    ['13', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' '],
-    ['14', ' ', 'DWS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'DWS', ' '],
-    ['15', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', 'TWS', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS']]
+        ['01', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', 'TWS', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS'],
+        ['02', ' ', 'DWS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'DWS', ' '],
+        ['03', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' '],
+        ['04', 'DLS', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' ', 'DLS'],
+        ['05', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' '],
+        ['06', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' '],
+        ['07', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', ' '],
+        ['08', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', '*', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS'],
+        ['09', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', ' '],
+        ['10', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' '],
+        ['11', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' '],
+        ['12', 'DLS', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' ', 'DLS'],
+        ['13', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' '],
+        ['14', ' ', 'DWS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'DWS', ' '],
+        ['15', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', 'TWS', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS']]
         self.scoreList = ['TWS', 'DWS', 'TLS', 'DLS']
         self.scores = {"a": 1, "c": 3, "b": 3, "e": 1, "d": 2, "g": 2,
        "f": 4, "i": 1, "h": 4, "k": 5, "j": 8, "m": 3,
@@ -379,11 +379,13 @@ class MovingLetter():
         m2.rackPosition = rackPos1
 
 
+        
+        
 class MovingExchangeLetter(MovingLetter):
     """For dragging to the exchange rack (see player.exchange). Child of MovingLetter."""
     def __init__(self, root, text, x, y, frame):
         super(MovingExchangeLetter, self).__init__(root, text, x, y, frame)
-        self.boundaryX, self.boundaryY = 550, 450
+        self.boundaryX, self.boundaryY = 1000, 350
         self.onExchangeRack = False
         
     def startMoveWindow(self, event):
@@ -408,16 +410,16 @@ class MovingExchangeLetter(MovingLetter):
         self.frame.lift()
     def getPositions(self):
         self.exchangeRackWidth, self.exchangeRackHeight = 210, 40
-        self.exchangeRackX, self.exchangeRackY = 300, 200
+        self.exchangeRackX, self.exchangeRackY = 150, 100
         self.labels_positionList = {}
         for column in range(7):
             self.labels_positionList[(self.exchangeRackX, column)] = ((column*30)+self.exchangeRackX, self.exchangeRackY+5)
     def getExchangeRack(self):
-        self.exchangeRack = Frame(self.root, bd=1, relief=RAISED)
+        self.exchangeRack = func.Frame(self.root, bd=1, relief=func.RAISED)
         self.exchangeRack.place(x=self.exchangeRackX, y=self.exchangeRackY, width=self.exchangeRackWidth, height = self.exchangeRackHeight)
         labels = []
         for i in range(7):
-            labels.append(Label(self.exchangeRack, relief=SUNKEN))
+            labels.append(func.Label(self.exchangeRack, relief=func.SUNKEN))
             labels[-1].place(x=i*30+self.exchangeRackX, y=self.exchangeRackY, height=30, width=30)            
     def isTouching(self, position1, position2, width1, height1, width2, height2):
         #super(MovingExchangeLetter, self).isTouching(position1, position2, width1, height1, width2, height2)
@@ -435,10 +437,14 @@ class MovingExchangeLetter(MovingLetter):
             return False
     def checkForReturn(self, *event):
         f1Position = (self.x, self.y)
-        if not(self.isTouching(f1Position, (200,130),
+        if not(self.isTouching(f1Position, (0, 0),
                           self.frame.winfo_width(), self.frame.winfo_height(),
-                          300, 275)):
+                          425, 300)):
             self.frame.place_configure(x=self.origX, y=self.origY)
             #self.x = self.origX
             #self.y = self.origY
             self.onExchangeRack = False
+    def weed_els(self):
+        for el in self.els:
+            if el is self:
+                self.els.remove(el)

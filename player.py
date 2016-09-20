@@ -1,5 +1,6 @@
 import tiles
 import functions as func
+
 class Player():
     def __init__(self, root, playerNum, name, x, y, mode1, mode2, rack, distribution):
         self.board = [[" ", "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K ", "L ", "M ", "N ", "O "],
@@ -121,6 +122,7 @@ class Player():
         self.coverUp.place_forget()
         
     def getScoreBoard(self, otherName, otherScore):
+        
         self.player1ScoreLabel = func.Label(self.root, text="%s's Score: %d" % (self.name, self.score), height=1, width=15, relief=func.SUNKEN, justify=func.LEFT, anchor=func.W)
         self.player2ScoreLabel = func.Label(self.root, text="%s's Score: %d" % (otherName, otherScore), height=1, width=15, relief=func.SUNKEN, justify=func.LEFT, anchor=func.W)
         if self.distribution:
@@ -138,45 +140,18 @@ class Player():
         self.tilesLabel.place(x=500, y=590)
         
     def updateSelfScore(self):
+        
         self.player1ScoreLabel.config(text = "%s's Score: %d" % (self.name, self.score))
         
-    def scoreAnimation(self, scoreLabel, startX, startY, endX, endY, endWidth, endHeight, travelTime = .1, changesPerSecond = 150, schoolComputerChangesPerSecond = 2500):
+    def scoreAnimation(self, scoreLabel, startX, startY):
+        
         frame = func.Frame(self.root, relief=func.RAISED)
         frame.place(x=startX, y=startY, height = 25, width = 25)
         label = func.Label(frame, text = "+" + str(scoreLabel), bd=1, relief=func.RAISED, height = 25, width = 25)
         label.pack()
 
         frame.lift()
-
-##        newX = startX
-##        newY = startY
-##
-##        changeNum = travelTime * changesPerSecond
-##        changeSpeed = travelTime / changesPerSecond
-##        if startX > endX:
-##            xChange = round((startX - endX) / changeNum)
-##        else:
-##            xChange = round((endX - startX) / changeNum)
-##
-##        if startY > endY:
-##            yChange = round((startY - endY) / changeNum)
-##        else:
-##            yChange = round((endY - startY) / changeNum)
-##            
-##        while not self.isTouchingScoreboard(newX, newY):
-##            if newX < endX:
-##                newX += xChange
-##            if newY < endY:
-##                newY += yChange
-##            if newX > endX:
-##                newX -= xChange
-##            if newY > endY:
-##                newY -= yChange
-##            frame.place_configure(x=newX, y=newY)
-##  
-##            frame.lift()
-##            frame.update()
-##
+        
         fontsize = 12
         for i in range(1, 15, 1):
             self.player1ScoreLabel.config(height=round(i/10), width=round(15*(i/10)), font=("Courier", fontsize+(round((i/10)*3))))
@@ -225,23 +200,26 @@ class Player():
     def exchange(self):
         self.root.update_idletasks()
         
-        self.exchangeWindow = Toplevel(self.root, height=self.screenHeight, \
-                                  width = self.screenWidth)
+        self.exchangeWindow = func.Toplevel(self.root, height=self.screenHeight/2, \
+                                  width = self.screenWidth/2-200)
         self.exchangeWindow.wm_title("Exchange")
 
         label = func.Label(self.exchangeWindow, text="Drag the letters you wish to exchange to the rack.", relief=func.RAISED)
-        label.place(x=390, y=130, height=50, width=310)
+        label.place(x=90, y=30, height=50, width=320)
 
         self.exchangeLetters = []
         for letterCount in range(len(self.rack)):
-            self.exchangeLetters.append(tiles.MovingExchangeLetter(self.exchangeWindow, self.rack[letterCount], letterCount*30+250, 400, self.exchangeWindow))
+            self.exchangeLetters.append(tiles.MovingExchangeLetter(self.exchangeWindow, self.rack[letterCount], letterCount*30+150, 300, self.exchangeWindow))
+        for i in self.exchangeLetters:
+            i.els = self.exchangeLetters
+            i.weed_els()
         self.exchangeLetters[-1].getExchangeRack()
             
         button = func.Button(self.exchangeWindow, text="Back", command=self.exchangeWindow.destroy)
-        button.place(x=500, y=360)
+        button.place(x=250, y=175)
 
         exchangeButton = func.Button(self.exchangeWindow, text="Enter", command=self.getNewTiles)
-        exchangeButton.place(x=550, y=230)
+        exchangeButton.place(x=175, y=175)
         
     def getNewTiles(self, *event):
         toBeExchanged = []
@@ -504,8 +482,6 @@ class Player():
     def endTurn(self):
         """End the turn by quitting the root."""
         #for movable in self.movables:
- #           movable.frame.destroy()
- #       self.root.withdraw()
         self.root.quit()
 
         self.root.destroy()
@@ -644,7 +620,7 @@ class Player():
                 if movable.column * 31 + 50> lastX:
                     lastX = movable.column * 31 + 50
 
-        self.scoreAnimation(wordScore, lastX, lastY, self.scoreX, self.scoreY, 50, 100)
+        self.scoreAnimation(wordScore, lastX, lastY)
         
         self.score += wordScore
 
@@ -869,7 +845,8 @@ class Player():
             movable.returnToOrig()
             
     def shuffleRack(self):
-        shuffle(self.rack)
+        
+        func.shuffle(self.rack)
         for movable in self.movables:
             movable.frame.destroy()
         self.getMovables(self.x+50, self.y+25)

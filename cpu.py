@@ -261,8 +261,7 @@ class CPU(player.Player):
 
         else:
             print("Exchanging...")
-            for letter in self.rack:
-                self.rack.remove(letter)
+            self.exchange()
             self.drawTiles()
             return "Non"
     def takeTurn(self, maxlen = None):
@@ -280,8 +279,7 @@ class CPU(player.Player):
                 self.turnrotation += 1
                 if self.turnrotation >= 3:
                     print("Exchanging...")
-                    for letter in self.rack:
-                        self.rack.remove(letter)
+                    self.exchange()
                     self.drawTiles()
                     self.nondisplay = True
                 else:
@@ -319,6 +317,7 @@ class CPU(player.Player):
         #print("\n")
         
     def displayBoard(self, board):
+        
         count = 0
         text = ""
         text += "|"
@@ -345,7 +344,6 @@ class CPU(player.Player):
         print(text)
         
     def placeWord(self, word, board, place, direction): 
-        
         start = board[int(place[0])][int(place[1])]
         length = len(word)
         row = int(place[0])
@@ -591,3 +589,16 @@ class CPU(player.Player):
             for col in row:
                 nbo[-1].append(col)
         return nbo
+    def exchange(self):
+        minVals = [1000000, 1000000, 1000000, 1000000] #Letters to keep; exchange 3 tiles
+        for letter in self.rack:
+            for val in minVals:
+                if val not in func.ascii_uppercase and self.valuations[letter] < val:
+                    minVals[minVals.index(val)] = self.rack.index(letter)
+                    break
+        nar = self.rack[:]
+        for index in range(self.rack):
+            if index not in minVals:
+                nar.remove(self.rack[index])
+        self.rack = nar[:]
+        self.drawTiles()

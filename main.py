@@ -10,18 +10,13 @@ playing = 0
 try:
   open("resources/AI.txt")
 except:
-  print("Initializing subdictionaries")
+  print("Initializing subdictionaries...Please wait.")
   import diphthin
-  
-  
-#Tiles in "bag"
-global distribution
-#distribution = ["a", "a", "a", "a", "a", "a", "a", "a", "a", "b", "b", "c", "c", "d", "d", "d", "d", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "f", "f", "g", "g", "g", "h", "h", "i", "i", "i", "i", "i", "i", "i", "i", "i", "j", "k", "l", "l", "l", "l", "m", "m", "n", "n", "n", "n", "n", "n", "o", "o", "o", "o", "o", "o", "o", "o", "p", "p", "q", "r", "r", "r", "r", "r", "r","s", "s", "s", "s", "t", "t", "t", "t", "t", "t", "u", "u", "u", "u", "v", "v", "w", "w", "x", "y", "y", "z", "?", "?"]
-distribution = ["a", "a", "a", "a", "a", "a", "a", "a", "a", "b", "b", "c", "c", "d", "d", "d", "d", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "f", "f", "g", "g", "g", "h", "h", "i", "i", "i", "i", "i", "i", "i", "i", "i", "j", "k", "l", "l", "l", "l", "m", "m", "n", "n", "n", "n", "n", "n", "o", "o", "o", "o", "o", "o", "o", "o", "p", "p", "q", "r", "r", "r", "r", "r", "r","s", "s", "s", "s", "t", "t", "t", "t", "t", "t", "u", "u", "u", "u", "v", "v", "w", "w", "x", "y", "y", "z"]
+  print("Initialized...Thank you for your patience.")
 
-               # "?", "?", "?", "?", "?", "?", "?", "?","?", "?","?", "?", "?", "?"] #Just for fun :)
-               #"?" is a blank tile, can be any letter.
-###############Start of playing algorithms: instructions, mode1questions, mode2questions, play, mode1VarSwitch, mode2VarSwitch, check, checkData, scrabbleDestroy, exitGame.###############
+#Tiles in "bag"
+distribution = ["a", "a", "a", "a", "a", "a", "a", "a", "a", "b", "b", "c", "c", "d", "d", "d", "d", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "f", "f", "g", "g", "g", "h", "h", "i", "i", "i", "i", "i", "i", "i", "i", "i", "j", "k", "l", "l", "l", "l", "m", "m", "n", "n", "n", "n", "n", "n", "o", "o", "o", "o", "o", "o", "o", "o", "p", "p", "q", "r", "r", "r", "r", "r", "r","s", "s", "s", "s", "t", "t", "t", "t", "t", "t", "u", "u", "u", "u", "v", "v", "w", "w", "x", "y", "y", "z"]#"?", "?"] #"?" is a blank tile, can be any letter.
+
 def instructions():
     """Needs to be updated"""
     text = """Instructions for Scrabble:
@@ -97,9 +92,8 @@ def play():
     name2.place(x = 150, y = 175, height = 20, width = 100)
 
     cpuRemindLabel = func.Label(enterWindow, text = """Note: If name 2 is CPU, the computer
-will play for that player.""")
+    will play for that player.""")
     cpuRemindLabel.place(x=50, y=215, height=30, width=250)
- #   cpuRemindLabel.pack()
     
     mode1Label = func.Label(enterWindow, text = "Enter mode 1 (normal or hardcore):")
     mode1Label.place(x = 50, y = 295, height = 20, width = 210)
@@ -150,6 +144,7 @@ def check(string, validInputs, popupHeader, popupText):
         return False
     
 def checkData():
+    
     if check(mode1Var.get(), ['n', 'h', 'N', 'H', 'normal', 'hardcore'], "Invalid Mode 1", "Invalid Mode 1"):
         if check(mode2Var.get(), ['n', 's', 'N', 'S', 'normal', 'short'], "Invalid Mode 2", "Invalid Mode 2"):
             playing = 1
@@ -166,6 +161,7 @@ def checkData():
             playing = 0
             
 def scrabbleDestroy():
+    
     #DESTROY THE SCRABBLE
     #if you are playing, it
     #writes the game to the save file, then destroys the root of the scrabble
@@ -173,33 +169,39 @@ def scrabbleDestroy():
     if playing:
         try:
             games.writeAllGames([scrabble, scrabble])
-            games.scrabble.root.destroy()
+            scrabble.root.destroy()
         except NameError:
             pass
         
 def exitGame():
+    
     scrabbleDestroy()
     func.root.destroy()
     print("Thanks for playing! Hope you enjoyed! Have a nice day.")
     func.end()
 
 ###############Main interface###############
-func.root.config(bg=func.generateRandomColor())
 
-welcomeLabel = func.Label(func.root, text = "Welcome to Scrabble in Python!")
-instructionsButton = func.Button(func.root, text = "Instructions", command = instructions)
-playButton = func.Button(func.root, text = "Play", command = play)
-playSavedButton = func.Button(func.root, text = "Play Saved Game", command = games.playSavedGame)
-exitButton = func.Button(func.root, text = "Exit", command = exitGame)
+def setup():
+    func.setup()
+    
+    func.root.config(bg=func.generateRandomColor())
 
-welcomeLabel.place(x = 40, y = 0)
-instructionsButton.place(x = 90, y = 50)
-playButton.place(x = 110, y = 100)
-playSavedButton.place(x = 76, y = 150)
-exitButton.place(x = 112, y = 200)
+    welcomeLabel = func.Label(func.root, text = "Welcome to Scrabble in Python!")
+    instructionsButton = func.Button(func.root, text = "Instructions", command = instructions)
+    playButton = func.Button(func.root, text = "Play", command = play)
+    playSavedButton = func.Button(func.root, text = "Play Saved Game", command = games.playSavedGame)
+    exitButton = func.Button(func.root, text = "Exit", command = exitGame)
 
-if __name__ == "__main__": #Looks cooler :)
-    func.root.iconify()
-    func.root.update()
-    func.root.deiconify()
+    welcomeLabel.place(x = 40, y = 0)
+    instructionsButton.place(x = 90, y = 50)
+    playButton.place(x = 110, y = 100)
+    playSavedButton.place(x = 76, y = 150)
+    exitButton.place(x = 112, y = 200)
+
+    
+    
+    
+if __name__ == "__main__":
+    setup()
     func.root.mainloop()
