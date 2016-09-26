@@ -850,5 +850,20 @@ class Player():
         for movable in self.movables:
             movable.frame.destroy()
         self.getMovables(self.x+50, self.y+25)
+        
+    def make_dict(self):
+        self.dict_window = func.Toplevel(self.root, width=500, height=500)
+        l = func.Label(self.dict_window, height=2, width=50, text="Type a word below to check if it's actually a word.")
+        self.sv = func.StringVar()
+        e = func.Entry(self.dict_window, height=2, width=50, textvariable=self.sv)
+        be = func.Button(self.dict_window, text="Enter", command=self.checkDictWord)
+        bb = func.Button(self.dict_window, text="Back", command=self.dict_window.destroy)
+        for i in [l, e, self.sv, bb, be]:
+            i.pack()
 
+    def checkDictWord(self):
+        if self.checkWord(self.sv.get()):
+            dwl = func.Label(self.dict_window, text="That is a word.", foreground="red")
+        else:
+            dwl = func.Label(self.dict_window, text="That is not a word.", foreground="green")
 
