@@ -77,6 +77,9 @@ class Player():
         self.exchangeButton = func.Button(self.root, text = "Exchange", command= self.exchange)
         self.exchangeButton.place(x = self.x+50, y=self.y+100)
         
+        self.dictButton = func.Button(self.root, text = "Dictionary", command=self.make_dict)
+        self.dictButton.place(x = self.x-150, y=self.y+100)
+        
     def hideButtons(self):
         self.shuffleButton.place_forget()
         self.enterButton.place_forget()
