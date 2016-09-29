@@ -3,6 +3,7 @@ import functions as func
 
 class Player():
     def __init__(self, root, playerNum, name, x, y, mode1, mode2, rack, distribution):
+        self.dwlgen = 0
         self.board = [[" ", "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K ", "L ", "M ", "N ", "O "],
             ['01', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', 'TWS', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS'],
             ['02', ' ', 'DWS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'DWS', ' '],
@@ -89,7 +90,7 @@ class Player():
     def startTurn(self, otherName, otherScore):
         self.drawTiles()
         self.switchTurn = 0
-
+        self.dwlgen = 0
         self.root.deiconify()
         self.root.title("%s's Turn" % self.name)
         self.root.resizable(0,0)
@@ -855,18 +856,34 @@ class Player():
         self.getMovables(self.x+50, self.y+25)
         
     def make_dict(self):
-        self.dict_window = func.Toplevel(self.root, width=500, height=500)
+        self.dict_window = func.Toplevel(self.root, height=500, width=500)
         l = func.Label(self.dict_window, height=2, width=50, text="Type a word below to check if it's actually a word.")
-        self.sv = func.StringVar()
-        e = func.Entry(self.dict_window, height=2, width=50, textvariable=self.sv)
+ #       self.sv = func.StringVar()
+#        self.sv.set("Word")
+        self.e = func.Entry(self.dict_window)#, textvariable=self.sv)
+        self.e.delete(0, func.END)
+        self.e.insert(0, "word")
+ #       e.place(height=2, width=50)
         be = func.Button(self.dict_window, text="Enter", command=self.checkDictWord)
         bb = func.Button(self.dict_window, text="Back", command=self.dict_window.destroy)
-        for i in [l, e, self.sv, bb, be]:
+        self.dwlgen = 0
+        for i in [l, self.e, bb, be]:
             i.pack()
 
     def checkDictWord(self):
-        if self.checkWord(self.sv.get()):
-            dwl = func.Label(self.dict_window, text="That is a word.", foreground="red")
+        q=self.e.get()
+        if self.checkWord(q):
+            if self.dwlgen == 1:
+                self.dwl["text"] = "%s is a word." % q
+                self.dwl["foreground"] = "green"
+            else:
+                self.dwl = func.Label(self.dict_window, text="%s is a word." % q, foreground="green")
+                self.dwlgen = 1
         else:
-            dwl = func.Label(self.dict_window, text="That is not a word.", foreground="green")
-
+            if self.dwlgen == 1:
+                self.dwl["text"] = "%s is not a word." % q
+                self.dwl["foreground"] = "red"
+            else:
+                self.dwl = func.Label(self.dict_window, text="%s is not a word." % q, foreground="red")
+                self.dwlgen = 1
+        self.dwl.pack()
