@@ -858,6 +858,7 @@ class Player():
     def make_dict(self):
         self.dict_window = func.Toplevel(self.root, height=500, width=500)
         l = func.Label(self.dict_window, height=2, width=50, text="Type a word below to check if it's actually a word.")
+        self.dict_window.title("Dictionary")
  #       self.sv = func.StringVar()
 #        self.sv.set("Word")
         self.e = func.Entry(self.dict_window)#, textvariable=self.sv)
