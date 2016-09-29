@@ -57,6 +57,16 @@ class CPU(player.Player):
 
         for letter in func.ascii_uppercase:
             self.valuations[letter] = ospdcomp.count(letter)
+
+        valut = open("leaves.txt")
+        self.rv = {}
+        q = valut.read().split()
+       # print(q[:20])
+       # print(len(q))
+        for i in range(0, len(q), 2):
+            self.rv[q[i]] = float(q[i+1])
+            #print(q[i], q[i+1])
+
     def getAllCorrectCombinations(self, iterable, maxDepth):
         allWords = []
         wordsWithBlanks = {}
@@ -232,7 +242,16 @@ class CPU(player.Player):
         touching['column'] = column
         touching['text'] = boardToCheck[row][column]
         return touching
-    
+
+    def getEvaluation(self, move):
+        word = move["word"]
+        p_xR = self.rack[:]
+        p_xR.sort()
+        for i in word:
+            if i in p_xR:
+                p_xR.remove(i)
+        move["valuation"] = self.rv["".join(j for j in p_xR)]
+                                       
     def playAllWords(self, maxlength = None):
         self.rackonv()
         if self.board[8][8] == "*":
@@ -273,6 +292,7 @@ class CPU(player.Player):
                                 if self.placeWord(word, nbo, [row, column], direction):
                                     if self.checkWholeBoard(nbo, self.isFirstTurn)[0]:
                                         qbox = {"word":word, "board":nbo, "place":[row, column], "direction":direction}
+                                        self.getEvaluation(qbox)
                                         allMoves.append(qbox)
                                         self.getScore(qbox)
             print("That step actually took", func.time() - a, "seconds.")
@@ -289,11 +309,11 @@ class CPU(player.Player):
         if plays != "Non":
             self.turnrotation += 1
             self.nondisplay = False
-            bestplay = {"score":0}
+            bestplay = {"score":0, "valuation":0}
             for play in plays:
-                if play["score"] > bestplay["score"]:
+                if play["score"]+play["valuation"] > bestplay["score"]+bestplay["valuation"]:
                     bestplay = play
-            if bestplay == {"score":0}:
+            if bestplay == {"score":0, "valuation":0}:
                 print("Something went wrong. Reloading...")
                 maxleng = max(len(i) for i in self.getAllCorrectCombinations(self.rack, 7))
                 self.turnrotation += 1
@@ -305,11 +325,15 @@ class CPU(player.Player):
                 else:
                     self.takeTurn(maxlen = maxleng - 1)
             else:
-                self.displayBoard(bestplay["board"])
-                print("Word:", bestplay["word"])
-                print(self.placonv(bestplay["place"]))
-                print("Direction:", self.dirconv(bestplay["direction"]))
-                print("Score:", bestplay["score"])
+                play = bestplay
+                #for play in plays:
+                self.displayBoard(play["board"])
+                print("Word:", play["word"])
+                print(self.placonv(play["place"]))
+                print("Direction:", self.dirconv(play["direction"]))
+                print("Score:", play["score"])
+                print("Evaluation:", play["valuation"])
+                print("Total Score:", play["score"] + play["valuation"])
                 #self.rackonv()
             if not self.nondisplay and bestplay != {"score":0}:
                 self.turnrotation += 1
@@ -625,3 +649,4 @@ class CPU(player.Player):
 #c = CPU(func.root, [], func.distribution)
 #c.rack = ["A", "G", "C", "P", "E", "N", "?"]
 #print(c.getAllCorrectCombinations(c.rack, 7))
+c = CPU(func.root, [], func.distribution)
