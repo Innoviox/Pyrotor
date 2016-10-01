@@ -1,5 +1,22 @@
 import functions as func
-
+import sys
+try:
+    from matplotlib.mathtext import math_to_image
+    from io import BytesIO
+    from PIL import ImageTk, Image
+    mpl_in = 1
+except ImportError:
+    def genstr():
+        s = ""
+        for i in list((func.choice(func.printable[:-6]) for i in range(func.randint(5, 10)))):
+            s+=i
+        return s
+    print("matplotlib at %s not found" % genstr(), file = sys.stderr)
+    print("PIL at %s not found" % genstr(), file=sys.stderr)
+    print("io at %s not found" % genstr(), file=sys.stderr)
+    mpl_in = 0
+#q = open("unicode_data.txt", encoding="utf-8")
+#print(q.read().split())
 class MovingLetter():
     """Base tile class. 31x31 frame, moves with mouse. Main graphics of the entire game; can create board."""
     def __init__(self, root, text, x, y, frame):
