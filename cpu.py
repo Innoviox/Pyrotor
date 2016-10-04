@@ -57,7 +57,7 @@ class CPU(player.Player):
 
         for letter in func.ascii_uppercase:
             self.valuations[letter] = ospdcomp.count(letter)
-
+        #Leaves from http://quackle.cvs.sourceforge.net/viewvc/quackle/quackle/data/strategy/twl06/superleaves?revision=1.1
         valut = open("leaves.txt")
         self.rv = {}
         q = valut.read().split()
@@ -289,12 +289,17 @@ class CPU(player.Player):
                         for column in range(1, len(self.board[row])):
                             for direction in ["A", "D"]:
                                 nbo = self.rNab()
-                                if self.placeWord(word, nbo, [row, column], direction):
-                                    if self.checkWholeBoard(nbo, self.isFirstTurn)[0]:
-                                        qbox = {"word":word, "board":nbo, "place":[row, column], "direction":direction}
-                                        self.getEvaluation(qbox)
-                                        allMoves.append(qbox)
-                                        self.getScore(qbox)
+                                d = self.getDepth(self.getAttributes("%d,%d" % (row, column), nbo), direc=direction)
+                                #print(d, "%d,%d" % (row, column), word)
+                                #self.displayBoard(nbo)
+##                                func.sleep(1)
+                                if d <= len(word):
+                                    if self.placeWord(word, nbo, [row, column], direction):
+                                        if self.checkWholeBoard(nbo, self.isFirstTurn)[0]:
+                                            qbox = {"word":word, "board":nbo, "place":[row, column], "direction":direction}
+                                            self.getEvaluation(qbox)
+                                            allMoves.append(qbox)
+                                            self.getScore(qbox)
             print("That step actually took", func.time() - a, "seconds.")
 
             return allMoves
@@ -335,7 +340,7 @@ class CPU(player.Player):
                 print("Evaluation:", play["valuation"])
                 print("Total Score:", play["score"] + play["valuation"])
                 #self.rackonv()
-            if not self.nondisplay and bestplay != {"score":0}:
+            if not self.nondisplay and bestplay != {"score":0, "valuation":0}:
                 self.turnrotation += 1
                 self.score += bestplay["score"]
                 self.board = bestplay["board"]
@@ -637,16 +642,76 @@ class CPU(player.Player):
         minVals = [1000000, 1000000, 1000000, 1000000] #Letters to keep; exchange 3 tiles
         for letter in self.rack:
             for val in minVals:
-                if val not in func.ascii_uppercase and self.valuations[letter] < val:
+                if str(val) not in func.ascii_uppercase and self.valuations[letter] < val:
                     minVals[minVals.index(val)] = self.rack.index(letter)
                     break
         nar = self.rack[:]
-        for index in range(self.rack):
+        for index in range(len(self.rack)):
             if index not in minVals:
                 nar.remove(self.rack[index])
         self.rack = nar[:]
         self.drawTiles()
+    def getDepth(self, attributes, direc=None):
+        upDepth = 0
+        downDepth = 0
+        leftDepth = 0
+        rightDepth = 0
+        if attributes["up"] == " ":
+            row = attributes["row"]
+            column = attributes["column"]
+            newLetter = self.getAttributes("%d,%d" % (column, row-1), self.board)
+            while newLetter["up"] in self.extraList:
+                upDepth += 1
+                row = newLetter["row"]
+                column = newLetter["column"]
+                newLetter = self.getAttributes("%d,%d" % (column, row-1), self.board)
+                
+        if attributes["down"] in self.extraList:
+            row = attributes["row"]
+            column = attributes["column"]
+            newLetter = self.getAttributes("%d,%d" % (column, row+1), self.board)
+            while newLetter["down"] in self.extraList:
+                downDepth += 1
+                row = newLetter["row"]
+                column = newLetter["column"]
+                newLetter = self.getAttributes("%d,%d" % (column, row+1), self.board)
+                
+        if attributes["left"] in self.extraList:
+            row = attributes["row"]
+            column = attributes["column"]
+            newLetter = self.getAttributes("%d,%d" % (column-1, row), self.board)
+            while newLetter["left"] in self.extraList:
+                leftDepth += 1
+                row = newLetter["row"]
+                column = newLetter["column"]
+                newLetter = self.getAttributes("%d,%d" % (column-1, row), self.board)
+                
+        if attributes["right"] == " ":
+            row = attributes["row"]
+            column = attributes["column"]
+            newLetter = self.getAttributes("%d,%d" % (column+1, row), self.board)
+            while newLetter["right"] in self.extraList:
+                rightDepth += 1
+                row = newLetter["row"]
+                column = newLetter["column"]
+                newLetter = self.getAttributes("%d,%d" % (column+1, row), self.board)
+        if direc is None:
+            if leftDepth == 0 or rightDepth == 0:
+                return upDepth + downDepth
+            elif upDepth == 0 or downDepth == 0:
+                return leftDepth + rightDepth
+        else:
+            if direc == "A":
+                return rightDepth
+            elif direc=="D":
+                return downDepth
+            elif direc == "A1":
+                return leftDepth + rightDepth
+            else:
+                return upDepth + downDepth
 #c = CPU(func.root, [], func.distribution)
 #c.rack = ["A", "G", "C", "P", "E", "N", "?"]
 #print(c.getAllCorrectCombinations(c.rack, 7))
-#c = CPU(func.root, [], func.distribution)
+if __name__ == "main":
+    c = CPU(func.root, [], func.distribution)
+    #print(c.getDepth(

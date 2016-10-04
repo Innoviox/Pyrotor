@@ -238,7 +238,8 @@ class SavedGame(Game):
         self.gameAlreadyInFile = True
         gameVars = self.setGameVars(gameText)
         global distribution
-        distribution = gameVars[10]#.split(",")
+        distribution = getDist()
+        #distribution = gameVars[10]#.split(",")
         self.distribution = distribution
         print(self.distribution)
         #print(distribution)
@@ -257,9 +258,9 @@ class SavedGame(Game):
         print(type(self.distribution))
         self.player1 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, rack1, self.distribution)
         if self.name2 == "CPU":
-            self.player2 = cpu.CPU(self.root2, [], self.distribution)
+            self.player2 = cpu.CPU(self.root2, rack2, self.distribution)
         else:
-            self.player2 = player.Player(self.root2, 2, self.name2, 150, 550, self.mode1, self.mode2, [], self.distribution)
+            self.player2 = player.Player(self.root2, 2, self.name2, 150, 550, self.mode1, self.mode2, rack2, self.distribution)
         self.playerGoing = 1
         
     def updateScores(self):
@@ -297,7 +298,31 @@ class SavedGame(Game):
     def main(self):
         super(SavedGame, self).main()   
         
+def getDist(file="savedGame.txt"):
+    h = open(file).read().split("\n")
+    dist = ["a", "a", "a", "a", "a", "a", "a", "a", "a", "b", "b", "c", "c", "d", "d", "d", "d", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "f", "f", "g", "g", "g", "h", "h", "i", "i", "i", "i", "i", "i", "i", "i", "i", "j", "k", "l",    "l", "l", "l", "m", "m", "n", "n", "n", "n", "n", "n", "o", "o", "o", "o", "o", "o", "o", "o", "p", "p", "q", "r", "r", "r", "r", "r", "r","s", "s", "s", "s", "t", "t", "t", "t", "t", "t", "u", "u", "u", "u", "v", "v", "w", "w", "x", "y", "y", "z"]
+    q = open(file).read().split()
+    r1, r2 = q[10], q[11]
+    print(dist)
+    h = h[14:]
+    g = []
+    for i in h:
+        g.append(i.split("|"))
+    #print("" in func.ascii_uppercase)
+    for j in g:
+        for k in j:
+            #print(k)
+            if k in func.ascii_uppercase and k != "":
+                #print(func.ascii_uppercase)
+                #print(k)
+                dist.remove(k.lower())
+    for r in [r1, r2]:
+        for l in r:
+            dist.remove(l.lower())
         
+    #print(g)
+    print(dist, len(dist))
+    return dist
 def playSavedGame(file="savedGame.txt"):
     
     if len(open(file).read()) > 0:
@@ -389,3 +414,5 @@ def writeGameToFile(game, gameNum = -1, gameAlreadyInFile = False, file="savedGa
         #print(fileText, gameNum)
         fileText[gameNum] = text
         setFileTextToList(fileText)
+if __name__ == "__main__":
+    getDist()
