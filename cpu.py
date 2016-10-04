@@ -66,8 +66,14 @@ class CPU(player.Player):
         for i in range(0, len(q), 2):
             self.rv[q[i]] = float(q[i+1])
             #print(q[i], q[i+1])
-
-    def getAllCorrectCombinations(self, iterable, maxDepth):
+    def gac(self, iterable, minDepth, maxDepth):
+        allWords = []
+        for depth in range(minDepth, maxDepth + 1): #only needs to get length 3 and above
+            for word in func.permutations(iterable, depth):
+                allWords.append("".join(word))
+        return allWords
+    
+    def gacc(self, iterable, maxDepth):
         allWords = []
         wordsWithBlanks = {}
         alreadyChecked = []
@@ -251,7 +257,18 @@ class CPU(player.Player):
             if i in p_xR:
                 p_xR.remove(i)
         move["valuation"] = self.rv["".join(j for j in p_xR)]
-                                       
+    def ge(self, simexch):
+        p_xRs = self.rack[:]
+        p_xRs.sort()
+        for i in simexch:
+            if i in p_xRs:
+                p_xRs.remove(i)
+        q = "".join(j for j in p_xRs)
+        if q=="":
+            return 0
+        else:
+            return self.rv[q]
+    
     def playAllWords(self, maxlength = None):
         self.rackonv()
         if self.board[8][8] == "*":
@@ -262,7 +279,7 @@ class CPU(player.Player):
         print("Loading...This step will take approximately", round(func.uniform(0.9, 1.2), 4), "seconds.")
         a = func.time()
         allMoves = []
-        allWords = self.removeDuplicates(self.getAllCorrectCombinations(self.rack, 7))
+        allWords = self.removeDuplicates(self.gacc(self.rack, 7))
         print("That step actually took", func.time() - a, "seconds.")
         boards = 0
         possboards = 0
@@ -320,7 +337,7 @@ class CPU(player.Player):
                     bestplay = play
             if bestplay == {"score":0, "valuation":0}:
                 print("Something went wrong. Reloading...")
-                maxleng = max(len(i) for i in self.getAllCorrectCombinations(self.rack, 7))
+                maxleng = max(len(i) for i in self.gacc(self.rack, 7))
                 self.turnrotation += 1
                 if self.turnrotation >= 3:
                     print("Exchanging...")
@@ -639,18 +656,19 @@ class CPU(player.Player):
                 nbo[-1].append(col)
         return nbo
     def exchange(self):
-        minVals = [1000000, 1000000, 1000000, 1000000] #Letters to keep; exchange 3 tiles
-        for letter in self.rack:
-            for val in minVals:
-                if str(val) not in func.ascii_uppercase and self.valuations[letter] < val:
-                    minVals[minVals.index(val)] = self.rack.index(letter)
-                    break
+        nar = self.gac(self.rack, 1, len(self.rack))
+        vals = {}
+        for c in nar:
+            #print(c, self.ge(c))
+            vals[self.ge(c)] = c
+        exch = vals[max(vals.keys())]
+        print(exch)
         nar = self.rack[:]
-        for index in range(len(self.rack)):
-            if index not in minVals:
-                nar.remove(self.rack[index])
+        for i in exch:
+            nar.remove(i)
         self.rack = nar[:]
         self.drawTiles()
+    
     def getDepth(self, attributes, direc=None):
         upDepth = 0
         downDepth = 0
@@ -712,6 +730,14 @@ class CPU(player.Player):
 #c = CPU(func.root, [], func.distribution)
 #c.rack = ["A", "G", "C", "P", "E", "N", "?"]
 #print(c.getAllCorrectCombinations(c.rack, 7))
-if __name__ == "main":
+if __name__ == "__main__":
     c = CPU(func.root, [], func.distribution)
-    #print(c.getDepth(
+    c.rackonv()
+    for i in range(5):
+        c.exchange()
+        c.rackonv()
+        bingos = []
+        for i in c.gacc(c.rack, 7):
+            if len(i)==7 and i not in bingos:
+                bingos.append(i)
+        print(bingos)
