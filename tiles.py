@@ -1,10 +1,65 @@
 import functions as func
 import sys
 try:
-    from matplotlib.mathtext import math_to_image
+    from matplotlib.mathtext import math_to_image, MathTextParser
+    from matplotlib.font_manager import FontProperties
     from io import BytesIO
     from PIL import ImageTk, Image
+    from tkinter import PhotoImage
+    #from matplotlib.mathtext import MathTextParser
+    from matplotlib.image import imsave
+
+    class Subscript():#tk.Frame):
+        def __init__(self, root, letter, x, y, board=False):
+            #tk.Frame.__init__(self, frame)
+            #self.pack()
+            self.scores = {"a": 1, "c": 3, "b": 3, "e": 1, "d": 2, "g": 2,
+           "f": 4, "i": 1, "h": 4, "k": 5, "j": 8, "m": 3,
+           "l": 1, "o": 1, "n": 1, "q": 10, "p": 3, "s": 1,
+           "r": 1, "u": 1, "t": 1, "w": 4, "v": 4, "y": 4,
+           "x": 8, "z": 10, "?" : 0}
+            self.frame = func.Frame(root, width=29, height=29)
+            self.frame.place_configure(x=x, y=y)
+            self.letter = letter
+            #self.root = root
+            #print(x, y)
+            self.x_pos = x
+            self.y_pos = y
+            self.board = board
+            self.createN(letter.upper())
+            #print(letter)
+
+
+        def createN(self, letter):
+            font = FontProperties()
+            font.set_family('sans-serif')
+            parser =  MathTextParser('bitmap')
+            data, someint = parser.parse(r'%s$_{%d}$' % (letter, self.scores[letter.lower()]), dpi=130)
+            if self.board:
+                cap='gist_gray_r'
+            else:
+                cap='gist_gray_r'
+            imsave("resources/%s.png" % letter,data.as_array(),cmap=cap)
+            img = ImageTk.PhotoImage(master = self.frame, file="resources/%s.png" % letter, width=29, height=29)
+            #print(self.frame)
+            #self.frame.pack()
+            self.label = func.Label(self.frame, image=img)#, width=31, height=31)
+            self.label.image = img
+            #print(self.x_pos, self.y_pos)
+            #self.label.place_configure(x=self.x_pos, y=self.y_pos, width=31, height=31)
+            self.label.pack()
+            
+        def createWidgets(self, letter):
+            buffer = BytesIO()
+            math_to_image(r'$%s_%d$' % (letter, self.scores[letter.lower()]), buffer, dpi=100, format='png')
+            buffer.seek(0)
+            pimage= Image.open(buffer)
+            imag = ImageTk.PhotoImage(pimage)
+            self.label = func.Label(self.frame,image=imag)
+            self.label.image = imag
+            self.label.pack()#side="bottom")
     mpl_in = 1
+    _w, _h, _d = 31, 31, 0
 except ImportError:
     def genstr():
         s = ""
@@ -15,6 +70,7 @@ except ImportError:
     print("PIL at %s not found" % genstr(), file=sys.stderr)
     print("io at %s not found" % genstr(), file=sys.stderr)
     mpl_in = 0
+    _w, _h, _d = 31, 31, 0
 #q = open("unicode_data.txt", encoding="utf-8")
 #print(q.read().split())
 class MovingLetter():
@@ -68,21 +124,38 @@ class MovingLetter():
 
     def getFrame(self, size):
         """Gets a frame of size {size} (normally 31) with text {self.text + subscirpt of score}"""
-        self.frame = func.Frame(self.rackFrame, bd=1, relief=func.SUNKEN)
-        self.frame.place(x=self.x, y=self.y, width=size, height=size)
+     
+        #self.frame.pack()
+        if mpl_in == 1:
+            #self.frame.config(bd=0)
+            overarch = Subscript(self.rackFrame, self.text, self.x, self.y)
+            self.label = overarch.label
+            self.frame = overarch.frame
+            #print(self.x, self.y)
+            #self.label.place_configure(x=self.x, y=self.y)
+            self.label.bind('<ButtonPress-1>', self.startMoveWindow)
+            self.label.bind('<B1-Motion>', self.MoveWindow)
+            self.label.bind('<ButtonRelease-1>', self.checkForReturn)
+            
+            self.frame.bind('<ButtonPress-1>', self.startMoveWindow)
+            self.frame.bind('<B1-Motion>', self.MoveWindow)
+            self.frame.bind('ButtonRelease-1>', self.checkForReturn)
 
-        self.label = func.Label(self.frame, bd=1, relief=func.RAISED, \
-                           text=self.text+self.getSubscript(self.scores[self.text.lower()]),  #Puts the points for the letter on the label\
-                           height=size, width=size, bg="yellow")
-        self.label.pack(fill=func.X, padx=1, pady=1)
+        else:
+            self.frame = func.Frame(self.rackFrame, bd=1, relief=func.SUNKEN)
+            self.frame.place(x=self.x, y=self.y, width=size, height=size)   
+            self.label = func.Label(self.frame, bd=1, relief=func.RAISED, \
+                               text=self.text+self.getSubscript(self.scores[self.text.lower()]),  #Puts the points for the letter on the label\
+                               height=size, width=size, bg="yellow")
+            self.label.pack(fill=func.X, padx=1, pady=1)
 
-        self.label.bind('<ButtonPress-1>', self.startMoveWindow)
-        self.label.bind('<B1-Motion>', self.MoveWindow)
-        self.label.bind('<ButtonRelease-1>', self.checkForReturn)
-        
-        self.frame.bind('<ButtonPress-1>', self.startMoveWindow)
-        self.frame.bind('<B1-Motion>', self.MoveWindow)
-        self.frame.bind('ButtonRelease-1>', self.checkForReturn)
+            self.label.bind('<ButtonPress-1>', self.startMoveWindow)
+            self.label.bind('<B1-Motion>', self.MoveWindow)
+            self.label.bind('<ButtonRelease-1>', self.checkForReturn)
+            
+            self.frame.bind('<ButtonPress-1>', self.startMoveWindow)
+            self.frame.bind('<B1-Motion>', self.MoveWindow)
+            self.frame.bind('ButtonRelease-1>', self.checkForReturn)
         
         self.frame.lift()
 
@@ -134,12 +207,12 @@ class MovingLetter():
         f1Position = [self.x, self.y]
         for labelPosition in self.labels_positionList.keys():
             #print(self.labels_positionList[labelPosition][0])
-            #if self.isIn(self.x, self.y, labelPosition[0], labelPosition[1], 31, 31) 
+            #if self.isIn(self.x, self.y, labelPosition[0], labelPosition[1], _w, _h) 
             if self.isTouching(f1Position, labelPosition, self.frame["width"], self.frame["height"],
-                               31, 31):
+                               _w, _h):
                 tempHover = self.formatPos(self.labels_positionList[labelPosition])
                 if self.isEmpty(self.labels_positionList[labelPosition], coords=False): 
-                    self.frame.place_configure(x=labelPosition[0], y=labelPosition[1])
+                    self.frame.place_configure(x=labelPosition[0]+_d, y=labelPosition[1]+_d)
                     self.hoveringOver = tempHover
                     self.x = labelPosition[0]
                     self.y = labelPosition[1]
@@ -291,20 +364,32 @@ class MovingLetter():
                     entry = func.Frame(self.boardFrame, bd=1, relief=func.RAISED)
                     entry.place(x=(i*31), y=(j*31), width=31, height=31)
                     labels.append(func.Label(entry, text = label,
-                                        height = 31, width = 31))
+                                            height = 31, width = 31))
                     if label in colors.keys():
                         labels[-1].config(bg=colors[label])
                         
                     labels[-1].pack()
                 else:
-                    frame = func.Frame(self.boardFrame, bd=1, relief=func.RAISED)
-                    frame.place(x=(i*31), y=(j*31), width=31, height=31)
-                    entry = func.Frame(self.boardFrame, bd=1, relief=func.SUNKEN)
-                    entry.place(x=(i*31) + 3, y=(j*31) + 3, width=25, height=25)
-                    squares.append(func.Label(entry, bd = 1, text=label+self.getSubscript(self.scores[label.lower()]),
-                                         height=25, width=25, relief=func.RAISED))
-                    squares[-1].pack(fill=func.X, padx=1, pady=1)
-                    entry.lift()
+                    if mpl_in == 0:
+                        frame = func.Frame(self.boardFrame, bd=1, relief=func.RAISED)
+                        frame.place(x=(i*31), y=(j*31), width=31, height=31)
+                        entry = func.Frame(self.boardFrame, bd=1, relief=func.SUNKEN)
+                        entry.place(x=(i*31) + 3, y=(j*31) + 3, width=25, height=25)
+                        squares.append(func.Label(entry, bd = 1, text=label+self.getSubscript(self.scores[label.lower()]),
+                                             height=25, width=25, relief=func.RAISED))
+                        squares[-1].pack(fill=func.X, padx=1, pady=1)
+                        entry.lift()
+                        
+                    else:
+                        #frame = func.Frame(self.boardFrame, bd=1, relief=func.RAISED)
+                        #frame.place(x=(i*31), y=(j*31), width=31, height=31)
+                        #entry = func.Frame(self.boardFrame, bd=1, relief=func.SUNKEN)
+                        #entry.place(x=(i*31) + 3, y=(j*31) + 3, width=25, height=25)
+                        hf = Subscript(self.boardFrame, label, i*31, j*31, board=True)
+                        #squares.append(hf.label)
+                        #squares[-1].pack(fill=func.X, padx=1, pady=1)
+                        print(hf.letter)
+                    
                     
         self.helpLabel = func.Label(self.root, text = "Note: For best tile placement, \naim for below and to the right of the square.", )
         self.helpLabel.place(x=50, y=10, height=35, width=497)
@@ -352,7 +437,7 @@ class MovingLetter():
         #To sense if it needs to switch with any other tiles on the rack. the event tag is unnecessary, right?
         for movable in self.movables:
             if self.isTouching((self.x, self.y), (movable.x, movable.y), 
-                               31, 31, 31, 31):
+                               _w, _h, _w, _h):
                 self.switchOnRack(self, movable)
                 
     def setPlace(self, x, y):
