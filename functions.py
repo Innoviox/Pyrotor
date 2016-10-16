@@ -1,5 +1,5 @@
 #Import necessary functions
-#This game needs 21 functions, classes, 
+#This game needs 23 functions, classes, 
 #and attributes from across 6 modules.
 from tkinter import Frame
 from tkinter import Label
@@ -13,6 +13,7 @@ from tkinter import RAISED
 from tkinter import X
 from tkinter import W
 from tkinter import LEFT
+from tkinter import END
 
 from random import randint
 from random import choice
@@ -20,6 +21,7 @@ from random import shuffle
 from random import uniform
 
 from string import ascii_uppercase
+from string import printable
 
 from time import sleep
 from time import time

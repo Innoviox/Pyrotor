@@ -2,7 +2,7 @@ import tiles
 import functions as func
 
 class Player():
-    def __init__(self, root, playerNum, name, x, y, mode1, mode2, rack, distribution):
+    def __init__(self, root, playerNum, name, x, y, mode1, mode2, rack, distribution, cpuIn):
         self.dwlgen = 0
         self.board = [[" ", "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K ", "L ", "M ", "N ", "O "],
             ['01', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', 'TWS', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS'],
@@ -20,7 +20,7 @@ class Player():
             ['13', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' '],
             ['14', ' ', 'DWS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'DWS', ' '],
             ['15', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', 'TWS', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS']]
-
+        self.cpuIn = cpuIn
         self.root = root
         if distribution != ():
            self.distribution = distribution
@@ -88,6 +88,10 @@ class Player():
         self.exchangeButton.place_forget()
         
     def startTurn(self, otherName, otherScore):
+        try:
+            self.oldroot.destroy()
+        except AttributeError:
+            pass
         self.drawTiles()
         self.switchTurn = 0
         self.dwlgen = 0
@@ -448,14 +452,15 @@ class Player():
                      movable.hoveringOver == "5,5" or movable.hoveringOver == "5,11" or \
                      movable.hoveringOver == "11,5" or movable.hoveringOver == "11,11" or \
                      movable.hoveringOver == "12,4" or movable.hoveringOver == "12,12" or \
-                     movable.hoveringOver == "13,3" or movable.hoveringOver == "13,13":
+                     movable.hoveringOver == "13,3" or movable.hoveringOver == "13,13" or \
+                     movable.hoveringOver == "14,2" or movable.hoveringOver == "14,14":
                     self.board[int(movable.row)][int(movable.column)] = "DWS"
-                elif movable.hoveringOver == "2,6" or movable.hoveringOver == "2,11" or \
+                elif movable.hoveringOver == "2,6" or movable.hoveringOver == "2,10" or \
                      movable.hoveringOver == "6,2" or movable.hoveringOver == "6,6" or \
                      movable.hoveringOver == "6,10" or movable.hoveringOver == "6,14" or \
-                     movable.hoveringOver == "10,2" or movable.hoveringOver == "10,7" or \
-                     movable.hoveringOver == "10,11" or movable.hoveringOver == "10,14" or \
-                     movable.hoveringOver == "14,6" or movable.hoveringOver == "14,11":
+                     movable.hoveringOver == "10,2" or movable.hoveringOver == "10,6" or \
+                     movable.hoveringOver == "10,10" or movable.hoveringOver == "10,14" or \
+                     movable.hoveringOver == "14,6" or movable.hoveringOver == "14,10":
                     self.board[int(movable.row)][int(movable.column)] = "TLS"
                 elif movable.hoveringOver == "1,4" or movable.hoveringOver == "1,12" or \
                      movable.hoveringOver == "3,7" or movable.hoveringOver == "3,9" or \
@@ -487,9 +492,10 @@ class Player():
         """End the turn by quitting the root."""
         #for movable in self.movables:
         self.root.quit()
-
-        self.root.destroy()
-       
+        if not self.cpuIn:
+            self.root.destroy()
+        else:
+            self.oldroot = self.root
         #self.overRoot.quit()
         #self.overRoot.withdraw()
         self.switchTurn = 1
@@ -643,6 +649,9 @@ class Player():
                     letter = func.choice(func.distribution)
                     func.distribution.remove(letter)
                     self.rack.append(letter.upper()) 
+        if 'Q' in self.rack:
+            self.rack.remove('Q')
+            self.rack.append('Q')
             
     def checkWord(self, word):
         #print(word, word.upper(), word.lower())
@@ -857,8 +866,8 @@ class Player():
         
     def make_dict(self):
         self.dict_window = func.Toplevel(self.root, height=500, width=500)
-        l = func.Label(self.dict_window, height=2, width=50, text="Type a word below to check if it's actually a word.")
         self.dict_window.title("Dictionary")
+        l = func.Label(self.dict_window, height=2, width=50, text="Type a word below to check if it's actually a word.")
  #       self.sv = func.StringVar()
 #        self.sv.set("Word")
         self.e = func.Entry(self.dict_window)#, textvariable=self.sv)
@@ -888,3 +897,10 @@ class Player():
                 self.dwl = func.Label(self.dict_window, text="%s is not a word." % q, foreground="red")
                 self.dwlgen = 1
         self.dwl.pack()
+    def rNab(self):
+        nbo = []
+        for row in self.board:
+            nbo.append([])
+            for col in row:
+                nbo[-1].append(col)
+        return nbo

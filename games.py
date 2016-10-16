@@ -18,11 +18,12 @@ class Game():
          self.gameAlreadyInFile = False
          
     def startGame(self):
-        self.player1 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, [], ())
+        self.player1 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, [], (), False)
         if self.name2 == "CPU":
-            self.player2 = cpu.CPU(self.root2, [])
+            self.player2 = cpu.CPU(self.root2, [], self.player1)
+            self.player1.cpuIn = True
         else:
-            self.player2 = player.Player(self.root2, 2, self.name2, 150, 550, self.mode1, self.mode2, [], ())
+            self.player2 = player.Player(self.root2, 2, self.name2, 150, 550, self.mode1, self.mode2, [], (), False)
         self.player1.otherName = self.name2
         self.player2.otherName = self.name1
         self.playerGoing = 1
@@ -84,8 +85,8 @@ class GameWithCPU(Game):
         super(GameWithCPU, self).__init__(name1, name2, mode1, mode2)
         
     def startGame(self):
-        self.player1 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, [], ())
-        self.player2= cpu.CPU(self.root, [], ())
+        self.player1 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, [], (), True)
+        self.player2= cpu.CPU(self.root, [], (), self.player1)
         self.player1.otherName = self.name2
         self.player2.otherName = self.name1
         self.playerGoing = 1
@@ -256,11 +257,12 @@ class SavedGame(Game):
         
     def startGame(self, rack1, rack2):
         print(type(self.distribution))
-        self.player1 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, rack1, self.distribution)
+        self.player1 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, rack1, self.distribution, False)
         if self.name2 == "CPU":
-            self.player2 = cpu.CPU(self.root2, rack2, self.distribution)
+            self.player2 = cpu.CPU(self.root2, rack2, self.distribution, self.player1)
+            self.player1.cpuIn = True
         else:
-            self.player2 = player.Player(self.root2, 2, self.name2, 150, 550, self.mode1, self.mode2, rack2, self.distribution)
+            self.player2 = player.Player(self.root2, 2, self.name2, 150, 550, self.mode1, self.mode2, rack2, self.distribution, False)
         self.playerGoing = 1
         
     def updateScores(self):
