@@ -57,7 +57,7 @@ class Game():
     def main(self):
         #self.startGame()
         if self.mode2.lower() == "n":
-            if self.player1.distribution:
+            if self.player1.de:
                 while len(self.player1.distribution) > 0 or (len(self.player1.rack) > 0 and len(self.player2.rack) > 0):
                     self.doTurn()
                     #self.updateScores()
@@ -109,7 +109,7 @@ class GameWithCPU(Game):
             self.gameAlreadyInFile = True
         else:
             writeGameToFile(self, gameNum = self.gameNum, gameAlreadyInFile = True)
-            
+        print(len(func.distribution))
     def main(self):
         #self.startGame()
         if self.mode2.lower() == "n":
@@ -242,7 +242,7 @@ class SavedGame(Game):
         distribution = getDist()
         #distribution = gameVars[10]#.split(",")
         self.distribution = distribution
-        print(self.distribution)
+        #print(self.distribution)
         #print(distribution)
         func.popup(func.root, "Pass Device", "Pass Device to %s\n\n" % [gameVars[0], gameVars[2]][gameVars[9]-1], 500, 500)
         super(SavedGame, self).__init__(gameVars[0], gameVars[2], gameVars[4], gameVars[5])
@@ -256,7 +256,7 @@ class SavedGame(Game):
         playing = 0
         
     def startGame(self, rack1, rack2):
-        print(type(self.distribution))
+        print(self.distribution)
         self.player1 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, rack1, self.distribution, False)
         if self.name2 == "CPU":
             self.player2 = cpu.CPU(self.root2, rack2, self.distribution, self.player1)
@@ -317,10 +317,18 @@ def getDist(file="savedGame.txt"):
             if k in func.ascii_uppercase and k != "":
                 #print(func.ascii_uppercase)
                 #print(k)
-                dist.remove(k.lower())
+                print(k)
+                try:
+                    dist.remove(k.lower())
+                except:
+                    print(k, "DOES NOT WORK")
     for r in [r1, r2]:
         for l in r:
-            dist.remove(l.lower())
+            print(l)
+            try:
+                dist.remove(l.lower())
+            except:
+                print(l, "DOES NOT WORK")
         
     #print(g)
     print(dist, len(dist))

@@ -611,10 +611,10 @@ class Proxy(player.Player):
     def commit_exch(self, exch):
         if type(exch) == type({}):
             exch = exch["word"]
-        print(exch)
+        #print(exch)
         nar = self.rack[:]
         for i in exch:
-            print(i)
+            #print(i)
             nar.remove(i)
         self.rack = nar[:]
         #self.drawTiles()
@@ -717,9 +717,12 @@ class CPU(player.Player):
         if distribution != ():
             self.distribution = distribution
             self.pd = self.distribution[:]
+            self.de = True #distexisted
         else:
             self.distribution = False
             self.pd = func.distribution[:]
+            self.de = False
+        print(self.de)
         self.name = "CPU"
         self.extraList = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", \
              "TWS", "DWS", "TLS", "DLS", \
@@ -839,7 +842,7 @@ class CPU(player.Player):
         
     def drawTiles(self):
         #print("CPU IS DRAWING TILES")
-        if self.distribution:
+        if self.de:
             if len(self.rack) < 7:
                 while len(self.rack) < 7 and len(self.distribution) > 0:
                     letter = func.choice(self.distribution)
@@ -979,7 +982,7 @@ class CPU(player.Player):
         except:
             move["valuation"] = 0
         #print(move)
- #      move["valuation"] += self.lookahead(move, p_xR, move["board"])[0]
+        #move["valuation"] += self.lookahead(move, p_xR, move["board"])[0]
         
     def ge(self, simexch):
         p_xRs = self.rack[:]
@@ -1029,9 +1032,13 @@ class CPU(player.Player):
             
             print("Generating...This step will take approximately", round(possboards * 0.0023, 4), "seconds.")
             a = func.time()
+            if self.board[-1] == []:
+                self.board.pop(-1)
+            #self.displayBoard(self.board)
             for word in longwords:
                     for row in range(1, len(self.board)):
                         for column in range(1, len(self.board[row])):
+                            #print(row, column)
                             for direction in ["A", "D"]:
                                 nbo = self.rNab()
                                 #d = self.getDepth(self.getAttributes("%d,%d" % (row, column), nbo), direc=direction)
@@ -1062,8 +1069,14 @@ class CPU(player.Player):
 
         else:
             print("Exchanging...")
-            self.exchange()
-            self.drawTiles()
+            exch = self.exchange()
+            if len(exch)>0:
+                exch = exch[0]
+                print("Exchanged Tiles:", exch["word"])
+                self.commit_exch(exch)
+                #self.drawTiles()
+            else:
+                print("CPU does not go this far :(")
             return "Non"
 
     def getBest(self, plays):
@@ -1093,6 +1106,7 @@ class CPU(player.Player):
         if plays != "Non":
             if exch:
                 plays.extend(self.exchange())
+                #print(plays)
             if plays != []:
  #              plays.extend(self.exchange())
                 #plays != []:
@@ -1151,8 +1165,8 @@ class CPU(player.Player):
                         print(self.placonv(play["place"]))
                         print("Direction:", self.dirconv(play["direction"]))
                         print("Score:", play["score"])
- #                       print("Evaluation:", play["valuation"])
- #                       print("Total Score:", play["score"] + play["valuation"])
+                        #print("Evaluation:", play["valuation"])
+                        #print("Total Score:", play["score"] + play["valuation"])
                     #self.rackonv()
                 if not self.nondisplay and bestplay != {"score":0, "valuation":0}:
                     self.turnrotation += 1
@@ -1163,8 +1177,8 @@ class CPU(player.Player):
                             self.rack.remove(letter)
             else:
                 self.takeTurn(exch=True)
-        else:
-            self.takeTurn(exch=True)
+        #else:
+            #self.takeTurn(exch=True)
             
     def dirconv(self, dirinit):
         if dirinit == "A":
@@ -1459,10 +1473,13 @@ class CPU(player.Player):
         return nbo
     def exchange(self):
         nar = self.gac(self.rack, 3, len(self.rack))
+        #print(len(nar))
         vals = {}
         for c in nar:
             #print(c, self.ge(c))
             vals[self.ge(c)] = c
+           # print(self.ge(c))
+        #print(vals)
         exchs = []
         ep = vals.copy()
        # print("Generating exchange values...this will take about {0} seconds.".format(func.uniform(3, 7)))
@@ -1470,12 +1487,17 @@ class CPU(player.Player):
         for i in range(min(len(vals), 10)):
             ev = max(ep.keys())
             exch = vals[ev]
-            exchs.append((exch, ev))#+self.lookahead(self.gmfev((exch, ev)), self.rack, self.board)[0]))
+            #print(ev, exch)
+            #print(exchs)
+            exchs.append(self.gmfev((exch, ev)))#+self.lookahead(self.gmfev((exch, ev)), self.rack, self.board)[0]))
             ep.pop(ev)
         #self.imps()
         ret = []
+        #self.imps()
         for i in exchs:
-            ret.append(self.gmfev(i))
+            ret.append(i)
+            #self.pm(i)
+        #print(ret)
         return ret
 
     def gmfev(self, exch):
@@ -1520,6 +1542,10 @@ class CPU(player.Player):
         self.rack = nar[:]
         self.drawTiles()
     def distances(self, row_num, col_num, direc):
+        #print(self.board, row_num, col_num)
+        if self.board[-1] == []:
+            self.board.pop(-1)
+        #print(self.board, row_num, col_num)
         letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         if not str(col_num).isdigit():
             col_num = ord(col_num.upper()) - ord('A') + 1

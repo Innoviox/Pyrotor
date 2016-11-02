@@ -23,9 +23,12 @@ class Player():
         self.cpuIn = cpuIn
         self.root = root
         if distribution != ():
-           self.distribution = distribution
+            self.distribution = distribution
+            self.de = True #distexisted
         else:
             self.distribution = False
+            self.de = False
+        print(self.de)
         #OSPD stands for official scrabble player's dictionary
         #self.ospd = open("dict.txt").read().split() #taken from http://www.puzzlers.org/pub/wordlists/ospd.txt #/Volumes/PYTHONDISK/
         try:
@@ -133,7 +136,7 @@ class Player():
         
         self.player1ScoreLabel = func.Label(self.root, text="%s's Score: %d" % (self.name, self.score), height=1, width=15, relief=func.SUNKEN, justify=func.LEFT, anchor=func.W)
         self.player2ScoreLabel = func.Label(self.root, text="%s's Score: %d" % (otherName, otherScore), height=1, width=15, relief=func.SUNKEN, justify=func.LEFT, anchor=func.W)
-        if self.distribution:
+        if self.de:
             self.tilesLabel = func.Label(self.root, text = "%d tiles left" % len(self.distribution), height = 1, width = 15, relief=func.SUNKEN)
         else:
             self.tilesLabel = func.Label(self.root, text = "%d tiles left" % len(func.distribution), height = 1, width = 15, relief=func.SUNKEN)
@@ -334,7 +337,7 @@ class Player():
                             func.popup(self.root, "Bingo!!!", "Bingo!!!\n\n\nYou used all your tiles!\n\n\n+50 points!", \
                                   self.screenHeight, self.screenWidth)
                             #self.score += 50
-                            self.scoreAnimation(50, 245, 245, self.scoreX, self.scoreY, 50, 100)
+                            self.scoreAnimation(50, self.scoreX, self.scoreY)
                             self.score += 50
                             
                         for movable in self.movables:
@@ -637,21 +640,19 @@ class Player():
         self.updateSelfScore()
         
     def drawTiles(self):
-        if self.distribution:
+        if self.de:
             if len(self.rack) < 7:
                 while len(self.rack) < 7 and len(self.distribution) > 0:
                     letter = func.choice(self.distribution)
                     self.distribution.remove(letter)
                     self.rack.append(letter.upper())
         else:
+             print("THIS SHOULD NOT BE HAPPENING (probably)")
              if len(self.rack) < 7:
                 while len(self.rack) < 7 and len(func.distribution) > 0:
                     letter = func.choice(func.distribution)
                     func.distribution.remove(letter)
                     self.rack.append(letter.upper()) 
-        if 'Q' in self.rack:
-            self.rack.remove('Q')
-            self.rack.append('Q')
             
     def checkWord(self, word):
         #print(word, word.upper(), word.lower())
