@@ -1,5 +1,23 @@
 import player
 import functions as func
+from os import system as clr
+class Move():
+    def __init__(self, word, board, place, direction, type):
+        self.word = word
+        self.board = board
+        self.place = place
+        self.row = place[0]
+        self.col = place[1]
+        self.type = type
+        
+    def comp(self, other):
+        try:
+            return self.score+self.valuation>other.score+other.valuation
+        except:
+            try:
+                return self.score+self.valuation>other["score"]+other["valuation"]
+            except:
+                return False
 
 class Proxy(player.Player):
     def __init__(self, rack, board, distribution, score, dict, vals, isFirstTurn):
@@ -261,6 +279,7 @@ class Proxy(player.Player):
                     for row in range(1, len(self.board)):
                         for column in range(1, len(self.board[row])):
                             for direction in ["A", "D"]:
+                                
                                 nbo = self.rNab()
                                 #d = self.getDepth(self.getAttributes("%d,%d" % (row, column), nbo), direc=direction)
                                 d = self.distances(int(row), int(column), direction)
@@ -288,8 +307,9 @@ class Proxy(player.Player):
         bestplay = {"score":0, "valuation":0}
         for play in plays:
             if play is not None:
-                if play["score"]+play["valuation"] > bestplay["score"]+bestplay["valuation"]:
+                if (bestplay == {"score":0, "valuation":0} and play["score"] > 0) or play["score"]+play["valuation"] > bestplay["score"]+bestplay["valuation"]:
                     bestplay = play
+                self.pm(play)
         return bestplay
     def takeTurn(self, maxlen = None):
         print("PROXY {0}: Generating.".format(player.tiles.genidstr(id(self))))
@@ -317,7 +337,7 @@ class Proxy(player.Player):
             bestplay = self.getBest(plays)
             if bestplay == {"score":0, "valuation":0}:
                 self.turnrotation += 1
-                if self.turnrotation > 3:
+                if self.turnrotation > 2:
 ##                    self.exchange()
 ####                    self.drawTiles()
                     self.nondisplay = True
@@ -336,7 +356,7 @@ class Proxy(player.Player):
 ##                    for letter in bestplay["word"]:
 ##                        self.rack.remove(letter)
             
-    def placeWord(self, word, board, place, direction): 
+    def placeWord(self, word, board, place, direction, ignore=None): 
         start = board[int(place[0])][int(place[1])]
         length = len(word)
         row = int(place[0])
@@ -353,7 +373,8 @@ class Proxy(player.Player):
                         
                         column += 1
                     else:
-                        return False
+                        if board[row][column] != ignore:
+                            return False
                 except:
                     return False
             else:
@@ -629,7 +650,16 @@ class Proxy(player.Player):
         leftDepth = next((i for i, c in enumerate(row[col_num-1:0:-1]) if c in letters), col_num-1)
         downDepth = next((i for i, c in enumerate(col[row_num+1:]) if c in letters), 15-row_num)
         upDepth = next((i for i, c in enumerate(col[row_num-1:0:-1]) if c in letters), row_num-1)
-
+        
+        if rightDepth is None:
+            rightDepth = 0
+        if leftDepth is None:
+            leftDepth = 0
+        if downDepth is None:
+            downDepth = 0
+        if upDepth is None:
+            upDepth = 0
+            
         if direc is None:
             if leftDepth == 0 or rightDepth == 0:
                 return upDepth + downDepth
@@ -722,7 +752,6 @@ class CPU(player.Player):
             self.distribution = False
             self.pd = func.distribution[:]
             self.de = False
-        print(self.de)
         self.name = "CPU"
         self.extraList = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", \
              "TWS", "DWS", "TLS", "DLS", \
@@ -736,7 +765,7 @@ class CPU(player.Player):
             ['05', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' '],
             ['06', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' '],
             ['07', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', ' '],
-            ['08', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', 'B', 'O', 'G', ' ', 'DLS', ' ', ' ', 'TWS'],
+            ['08', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', '*', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS'],
             ['09', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', ' '],
             ['10', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' '],
             ['11', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' '],
@@ -788,6 +817,121 @@ class CPU(player.Player):
             for word in func.permutations(iterable, depth):
                 allWords.append("".join(word))
         return allWords
+
+    def getThroughWords(self, board, row, column, direc):
+        h=board[row][column]
+        if h not in self.extraList:
+            d = self.distances(row, column, direc+"1")
+            #print(d)
+            if direc=="A":
+                d1 = self.distances(row, column, "L")
+                d2 = self.distances(row, column, "R")
+            else:
+                d1 = self.distances(row, column, "U")
+                d2 = self.distances(row, column, "D")
+            q = self.rack[:]
+            
+            q.append(h)
+            words = self.gacc(q, d)
+            try:
+                pattern = r".{0,%d}%s.{0,%d}" % (min(1, max(1, d1)), h, min(1, max(1, d2))) #min(1, x) gets past sre_compile errors: pattern-str of {1, 0} is not allowed.
+            except:
+                #print("OVERARCH ERROR {0}{1}{2}".format(player.tiles.genstr(), player.tiles.genstr(), player.tiles.genstr())) 
+
+                pattern = r"QQQQQQQQQPQPQPQPQPQPQPWOJEFPOAIEWJPFOIWEJF"
+            cullW = []
+            for word in words:
+                try:
+                    if func.match(pattern, word):
+                        cullW.append(word)
+                except:
+                    pas
+                    #print("OVERARCH ERROR {0}{1}{2} at {3}".format(player.tiles.genstr(), player.tiles.genstr(), player.tiles.genstr(), pattern))
+            return cullW, h
+        else:
+            return [], 'a'
+
+    def greedy(self, move, moves, words):
+        self.greedyNum += 1
+        m = 1.5
+        if move["score"]>=30:
+            return True
+        if len(move["word"])+2>=max(len(i) for i in words):
+            #print(move["word"])
+            val = move["score"] #+ move["valuation"]
+            avg = 0
+            for i in moves:
+                avg += i["score"]
+ #               avg += i["valuation"]
+            avg /= len(moves)+1
+            #print(val, m, avg)
+ #           func.sleep(1)
+            if val >= m*avg:
+                return True
+        return False
+
+    def testGreedy(self, move):
+        if move["score"]>=15:
+            return True
+        return False
+    
+    def testThrough(self):
+        print("Testing through...in alpha")
+        allMoves = []
+        if self.board[8][8] == "*":
+            self.isFirstTurn = True
+        else:
+            self.isFirstTurn = False
+        for row in range(1, len(self.board)):
+            for column in range(1, len(self.board[row])):
+                for direction in ["A", "D"]:
+                    nbo = self.rNab()
+                    words = self.getThroughWords(nbo, row, column, direction)
+                    h = words[1]
+                    words = words[0]
+                    for word in words:
+                        nbo = self.rNab()
+                        extrs = self.extr(nbo, len(word))
+                        r = row
+                        c = column
+                        if direction == "A":
+                            r -= word.index(h)
+                        else:
+                            c -= word.index(h)
+                        if self.checkSlot(nbo, r, c, direction, word):
+                            print("Valid Slot:", self.getSlot(nbo, r, c, direction, len(word)), word, end="")
+                            d = self.distances(int(row), int(column), direction)
+                            if d >= len(word):
+                                coords = [row, column-word.index(h)] if direction=="D" else [row-word.index(h), column]
+                                if self.placeWord(word, nbo, coords, direction, ignore=h):
+                                    efe = self.checkWholeBoard(nbo, self.isFirstTurn)
+                                    #print(efe[1])
+                                    #if "Invalid" in efe[1]: print(efe[2])
+                                    #self.displayBoard(nbo)
+                                    if efe[0]:
+                                        qbox = {"spec": h, "word":word.strip(), "board":nbo, "place":[row, column], "direction":direction, 'type':'  Play  '}
+                                        try:
+                                            self.getScore(qbox)
+                                            self.getEvaluation(qbox)
+                                            allMoves.append(qbox)
+                                            print()
+                                            print("Found move: ", end = "")
+                                            self.pm(qbox)
+                                            #print(qbox)
+                                            if self.testGreedy(qbox):
+                                                return allMoves
+                                        except:
+                                            print(qbox)
+                                            #raise BaseException
+                                        #print("EXTREME JOY")
+                                        #self.displayBoard(nbo)
+                                    else:
+                                        print("   Invalid")
+                                        #print("EXTREME TEARS") 
+                                        #self.displayBoard(nbo)
+                        else:
+                            print("Invalid Slot:", self.getSlot(nbo, r, c, direction, len(word)), word)
+        return allMoves
     
     def gacc(self, iterable, maxDepth):
         allWords = []
@@ -843,19 +987,25 @@ class CPU(player.Player):
     def drawTiles(self):
         #print("CPU IS DRAWING TILES")
         if self.de:
+#            print(self.rack, self.distribution)
+#            print(self.de)
             if len(self.rack) < 7:
                 while len(self.rack) < 7 and len(self.distribution) > 0:
                     letter = func.choice(self.distribution)
                     self.distribution.remove(letter)
                     self.rack.append(letter.upper())
                     #print(letter, end="")
+#                    print(letter)
         else:
+#             print(self.rack, func.distribution)
+#             print(self.de)
              if len(self.rack) < 7:
                 while len(self.rack) < 7 and len(func.distribution) > 0:
                     letter = func.choice(func.distribution)
                     func.distribution.remove(letter)
                     self.rack.append(letter.upper())
                     #print(letter, end="")
+#                    print(letter)
         #print()
     #Here's some functions that are in the player class but unfortunately could
     #not be supered because they had to be changed slightly
@@ -995,14 +1145,42 @@ class CPU(player.Player):
             return 0
         else:
             return self.rv[q]
-    
+    def c(self, s):
+        if s in self.extraList:
+            return "."
+        else:
+            return s
+    def getSlot(self, board, row, column, direc, length):
+        slot = ""
+        r = row
+        c = column
+        for i in range(length):
+            if r>15 or c>15:
+                return slot, row, column, direc, length
+            slot += self.c(board[r][c])
+            if direc == "A":
+                c += 1
+            else:
+                r += 1
+        return slot, row, column, direc, length
+
+    def checkSlot(self, board, row, column, direc, word):
+        slot = self.getSlot(board, row, column, direc, len(word))
+        if len(slot[0]) == len(word) and func.match(slot[0], word):
+            #print("yes", slot, word)
+            return True
+        else:
+            #print("no", slot, word)
+            return False
+
     def playAllWords(self, maxlength = None):
         self.rackonv()
         if self.board[8][8] == "*":
             self.isFirstTurn = True
         else:
             self.isFirstTurn = False
-            
+        self.greedyNum = 0
+        #print(self.isFirstTurn)
         print("Loading...This step will take approximately", round(func.uniform(0.9, 1.2), 4), "seconds.")
         a = func.time()
         allMoves = []
@@ -1013,77 +1191,82 @@ class CPU(player.Player):
         possboards = 0
         longwords = []
         if len(allWords) > 0:
-           # print(max(len(i) for i in allWords))
-            currmaxlen = min(min(len(self.rack), 7), max(len(i) for i in allWords))
-            #print(currmaxlen, max(len(i) for i in allWords))
-            print("Should be only generating words of length {0} and above.".format(currmaxlen))
+            currmaxlen = min(min(min(len(self.rack), 7), max(len(i) for i in allWords)), 4)
             for word in allWords:
                 if currmaxlen <= len(word):
-                    possboards += 148
+                    possboards += 300
                     longwords.append(word)
-##                if maxlength is None:
-##                    if len(word) == max(len(i) for i in allWords):
-##                        possboards += 344
-##                        longwords.append(word)
-##                else:
-##                    if 3<len(word):
-##                        possboards += 344
-##                        longwords.append(word)
-            
-            print("Generating...This step will take approximately", round(possboards * 0.0023, 4), "seconds.")
+            print("Generating...This step will take at most", round(possboards * 0.0023, 4), "seconds.")
             a = func.time()
             if self.board[-1] == []:
                 self.board.pop(-1)
-            #self.displayBoard(self.board)
             for word in longwords:
                     for row in range(1, len(self.board)):
                         for column in range(1, len(self.board[row])):
-                            #print(row, column)
                             for direction in ["A", "D"]:
                                 nbo = self.rNab()
-                                #d = self.getDepth(self.getAttributes("%d,%d" % (row, column), nbo), direc=direction)
-                                #print(d, "Row:", row, "Column:", column, word)
-
-                                #print(d, "%d,%d" % (row, column), word)
-                                #self.displayBoard(nbo)
-##                                func.sleep(1)
-                                #d = 0 #self.getDepth deprecation :(
-                                #print(int(row), int(column), direction)
-                                d = self.distances(int(row), int(column), direction)
-                                #print(d, int(row), int(column), direction, word, len(word))
-                                #self.displayBoard(nbo)
-                                if d >= len(word):
-                                    if self.placeWord(word, nbo, [row, column], direction):
-                                        if self.checkWholeBoard(nbo, self.isFirstTurn)[0]:
-                                            qbox = {"word":word, "board":nbo, "place":[row, column], "direction":direction, 'type':'  Play  '}
-                                            self.getScore(qbox)
-                                            self.getEvaluation(qbox)
-                                            allMoves.append(qbox)
+                                extrs = self.extr(nbo, len(word))
+                               # print("HI")
+                                if self.checkSlot(nbo, row, column, direction, word):
+                                    #print("valid slot")
+                                    d = self.distances(int(row), int(column), direction)
+                                    #print(d)
+                                    if d >= len(word):
+                                        #print("HI1")
+                                        if self.placeWord(word, nbo, [row, column], direction):
+                                            #print("HI2")
+                                            if self.checkWholeBoard(nbo, self.isFirstTurn)[0]:
+                                                qbox = {"word":word, "board":nbo, "place":[row, column], "direction":direction, 'type':'  Play  '}
+                                                self.getScore(qbox)
+                                                self.getEvaluation(qbox)
+ #                                               allMoves.append(qbox)
+                                                if self.greedy(qbox, allMoves, allWords):
+                                                    allMoves.append(qbox)
+                                                    self.pm(qbox)
+                                                    print("Greedy:: Break")
+                                                    return [qbox]
+                                                allMoves.append(qbox)
+                                                #print("HI3")
                                 else:
                                     pass
-                                    #print(d, len(word), "DEPRECATION MUCH?")
-                                    #func.sleep(10)
+                                    #print("invalid slot")
+                            #else:
+                                #print(extrs)
             print("That step actually took", func.time() - a, "seconds.")
-
+            #print(len(allMoves))
+            for play in allMoves:
+                pass
+ #               self.pm(play)
             return allMoves
 
         else:
-            print("Exchanging...")
-            exch = self.exchange()
-            if len(exch)>0:
-                exch = exch[0]
-                print("Exchanged Tiles:", exch["word"])
-                self.commit_exch(exch)
-                #self.drawTiles()
+ #           moves = self.testThrough()
+            moves = False
+            if moves:
+                return moves
             else:
-                print("CPU does not go this far :(")
-            return "Non"
+                print("Exchanging...")
+                exch = self.exchange()
+                if len(exch)>0:
+                    exch = exch[0]
+                    print("Exchanged Tiles:", exch["word"])
+                    self.commit_exch(exch)
+                    #self.drawTiles()
+                else:
+                    print("CPU does not go this far :(")
+                return "Non"
 
     def getBest(self, plays):
         bestplay = {"score":0, "valuation":0}
         for play in plays:
+ #           self.pm(play)
+            if bestplay == {"score":0, "valuation":0}:
+                bestplay = play
             if play["score"]+play["valuation"] > bestplay["score"]+bestplay["valuation"]:
                 bestplay = play
+ #               self.pm(play)
+            if play.get("spec"):
+                self.pm(play)
         return bestplay
     def getBestN(self, plays, n):
         cSv = 0
@@ -1096,7 +1279,20 @@ class CPU(player.Player):
                 bPs.append(play)
                 ps.remove(play)
         #print(bPs)
-        
+    def extr(self, board, l):
+        lc = 15
+        hc = 0
+        lr = 15
+        hr = 0
+        for r in range(1, len(board)):
+            for c in range(1, len(board[r])):
+                if not board[r][c] in self.extraList:
+                    lr = min(lr, r)
+                    hr = max(hr, r)
+                    lc = min(lc, c)
+                    hc = max(hc, c)
+        return lc, hc, lr, hr
+    
     def takeTurn(self, exch = False):
         if self.distribution:
             self.pd = self.distribution[:]
@@ -1140,13 +1336,22 @@ class CPU(player.Player):
                 if bestplay == {"score":0, "valuation":0}:
                     #print("Something went wrong. Reloading...")
                     print("Reproxying...")
-                    maxleng = max(len(i) for i in self.gacc(self.rack, 7))
+                    try:
+                        maxleng = max(len(i) for i in self.gacc(self.rack, 7))
+                    except:
+                        self.turnrotation = 3
                     self.turnrotation += 1
                     if self.turnrotation >= 3:
                         print("Exchanging...")
-                        self.exchange()
-                        self.drawTiles()
-                        self.nondisplay = True
+                        exch = self.exchange()
+                        if len(exch)>0:
+                            exch = exch[0]
+                            print("Exchanged Tiles:", exch["word"])
+                            self.commit_exch(exch)
+                            #self.drawTiles()
+                        else:
+                            print("CPU does not go this far :(")
+                        return "Non"
                     else:
                         self.takeTurn()#maxlen = maxleng - 1)
                 else:
@@ -1157,8 +1362,19 @@ class CPU(player.Player):
                     #for play in plays:
                     print()
                     if play["type"] == "Exchange":
-                        print("Exchanged Tiles:", play["word"])
-                        self.commit_exch(play)
+ #                       moves = self.testThrough()
+                        moves = False
+                        if moves:
+                            play = self.getBest(moves)
+                            self.displayBoard(play["board"])
+                            print("Word:", play["word"])
+                            print(self.placonv(play["place"]))
+                            print("Direction:", self.dirconv(play["direction"]))
+                            print("Score:", play["score"])
+                            bestplay = play
+                        else:
+                            print("Exchanged Tiles:", play["word"])
+                            self.commit_exch(play)
                     else:
                         self.displayBoard(play["board"])
                         print("Word:", play["word"])
@@ -1172,9 +1388,13 @@ class CPU(player.Player):
                     self.turnrotation += 1
                     self.score += bestplay["score"]
                     self.board = bestplay["board"]
+                    ignored = 0
                     if play["type"] != "Exchange":
                         for letter in bestplay["word"]:
-                            self.rack.remove(letter)
+                            if bestplay.get("spec") == letter:
+                                pass
+                            else:
+                                self.rack.remove(letter)
             else:
                 self.takeTurn(exch=True)
         #else:
@@ -1201,7 +1421,8 @@ class CPU(player.Player):
     def displayBoard(self, board):
         
         count = 0
-        text = ""
+        text = "-"*64
+        text += "\n"
         text += "|"
         for i in range(16):
             line = board[i]
@@ -1211,7 +1432,7 @@ class CPU(player.Player):
                         j = "  "
                     else:
                         j = "   "
-                if j[0] in func.ascii_uppercase and len(j) < 3:
+                if (j[0] in func.ascii_uppercase  or j == "*") and len(j) < 3:
                     j = " " + j[0] + " "
                 text += j
                 text += "|"
@@ -1223,9 +1444,40 @@ class CPU(player.Player):
                     text += "|"
                     count = 0
         text += "\n"
+        text += "-" * 64
+        text += "\n"
         print(text)
-        
-    def placeWord(self, word, board, place, direction): 
+
+    def slowdB(self, board):
+        count = 0
+        print("-" * 64, end="")
+        print('\n', end="")
+        print("|", end="")
+        for i in range(16):
+            line = board[i]
+            for j in line:
+                if j == " ":
+                    if i == 0:
+                        j = "  "
+                    else:
+                        j = "   "
+                if j[0] in func.ascii_uppercase and len(j) < 3:
+                    j = " " + j[0] + " "
+                print(j, end="")
+                print("|", end="")
+                count += 1
+                if count == 16 and i != 15:
+                    print("\n", end="")
+                    print("-" * 64, end="")
+                    print("\n", end="")
+                    print("|", end="")
+                    count = 0
+        print("\n", end="")
+        print("-" * 64, end="")
+        print("\n", end="")
+
+    def placeWord(self, word, board, place, direction, ignore=None):
+        #if not ignore is None: print(ignore)
         start = board[int(place[0])][int(place[1])]
         length = len(word)
         row = int(place[0])
@@ -1235,24 +1487,39 @@ class CPU(player.Player):
 
             if direction == 'A':
                 try:
-                    if board[row][column] not in func.ascii_uppercase: #checks if space isn't letter
+                    if board[row][column] not in func.ascii_uppercase or board[row][column] == ignore: #checks if space isn't letter
+                        #print(board[row][column])
                         if board[row][column] in self.scoreList:
                             pass 
                         board[row][column] = word[num]
                         
                         column += 1
                     else:
-                        return False
+                        if board[row][column] != ignore :
+                            #print("placement error at {0}, {1}, {2}, {3}".format(ignore, row, column, direction))
+                            #self.displayBoard(board)
+                            #func.sleep(1)
+                            return False
+                        else:
+                            print("ignored {0}".format(ignore))
                 except:
+                    print(row, column, direction, word)
                     return False
             else:
                 try:
-                    if board[row][column] not in func.ascii_uppercase:
+                    if board[row][column] not in func.ascii_uppercase or board[row][column] == ignore:
                         board[row][column] = word[num]
                         row += 1
                     else:
-                        return False
+                        if board[row][column] != ignore:
+                            #print("placement error at {0}, {1}, {2}, {3}".format(ignore, row, column, direction))
+                            #self.displayBoard(board)
+                            #func.sleep(1)
+                            return False
+                        else:
+                            print("ignored {0}".format(ignore))
                 except:
+                    print(row, column, direction, word)
                     return False
         return True
 
@@ -1568,8 +1835,12 @@ class CPU(player.Player):
                 return downDepth
             elif direc == "A1":
                 return leftDepth + rightDepth
-            else:
+            elif direc == "D1":
                 return upDepth + downDepth
+            elif direc=="L":
+                return leftDepth
+            elif direc=="U":
+                return upDepth
 ##        return {
 ##                'right': next((i for i, c in enumerate(row[col_num+1:]) if c in letters), 15-col_num),
 ##                'left': next((i for i, c in enumerate(row[col_num-1:0:-1]) if c in letters), col_num-1),
@@ -1694,10 +1965,25 @@ class CPU(player.Player):
 #print(c.getAllCorrectCombinations(c.rack, 7))
 if __name__ == "__main__":
     p = player.Player(func.root, 1, "ProxyStandInObject", 0, 0, 'n', 'n', [], func.distribution, True)
-    c = CPU(func.root, [], [], p)
+    c = CPU(func.root, [], (), p)
+    #c.displayBoard(c.board)
+ #   c.drawTiles()
+    #print(c.getBoardWords(c.board))
+    #print(c.rack)
+    #c.getThroughWords(c.board, 8, 8, "D")
+    #c.testThrough()
     #c.displayBoard(c.board)
     #print(c.getDepth(c.getAttributes("8,1", c.board), "D"))
-    c.takeTurn()
+    #c.rackonv()
+ #   c.slowdB(c.board)
+    c.displayBoard(c.board)
+    while len(func.distribution)>0:
+        c.takeTurn()
+        c.drawTiles()
+        func.sleep(1)
+        clr('clear')
+        #print("\n"*30)
+    #W*)&f$PB^MXa.Gg1A_7vES]~
     #print(c.distribution)
     #print(func.distribution)
     #c.exchange()

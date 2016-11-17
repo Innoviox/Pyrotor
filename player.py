@@ -28,7 +28,6 @@ class Player():
         else:
             self.distribution = False
             self.de = False
-        print(self.de)
         #OSPD stands for official scrabble player's dictionary
         #self.ospd = open("dict.txt").read().split() #taken from http://www.puzzlers.org/pub/wordlists/ospd.txt #/Volumes/PYTHONDISK/
         try:
@@ -647,7 +646,6 @@ class Player():
                     self.distribution.remove(letter)
                     self.rack.append(letter.upper())
         else:
-             print("THIS SHOULD NOT BE HAPPENING (probably)")
              if len(self.rack) < 7:
                 while len(self.rack) < 7 and len(func.distribution) > 0:
                     letter = func.choice(func.distribution)
