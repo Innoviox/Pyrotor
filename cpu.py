@@ -1,1423 +1,365 @@
-import player
+import itertools
+import string
+import collections
+import time
+import random
+#import tkinter as tk
 import functions as func
-from os import system as clr
+
+leaves = open("leaves.txt").read().split()
+leavesDict = {leaves[i]:float(leaves[i+1]) for i in range(0, len(leaves), 2)}
+leavesDict[''] = 0
+diphths = [["".join(i) for i in itertools.permutations(list(string.ascii_uppercase), 2)] + \
+                                        [j*2 for j in string.ascii_uppercase]][0]
+subdicts = {diphth: set(open("resources/" + diphth + ".txt").read().split()) \
+                         for diphth in diphths}
+
+regBoard=[[" ", "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K ", "L ", "M ", "N ", "O "],
+            ['01', 'TWS', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'TWS', ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   'TWS'],
+            ['02', ' ',   'DWS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'DWS', ' '],
+            ['03', ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   'DLS', ' ',   'DLS', ' ',   ' ',   ' ',   'DWS', ' ',   ' '],
+            ['04', 'DLS', ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   'DLS'],
+            ['05', ' ',   ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   ' '],
+            ['06', ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' '],
+            ['07', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'DLS', ' ',   'DLS', ' ',   ' ',   ' ',   'DLS', ' ',   ' '],
+            ['08', 'TWS', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   '*',   ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   'TWS'],
+            ['09', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'DLS', ' ',   'DLS', ' ',   ' ',   ' ',   'DLS', ' ',   ' '],
+            ['10', ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' '],
+            ['11', ' ',   ' ',   ' ',   ' ',   'DWS'  , ' ', ' ',   ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   ' '],
+            ['12', 'DLS', ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   'DLS'],
+            ['13', ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   'DLS', ' ',   'DLS', ' ',   ' ',   ' ',   'DWS', ' ',   ' '],
+            ['14', ' ',   'DWS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'DWS', ' '],
+            ['15', 'TWS', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'TWS', ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   'TWS']]
+
+
+extraList=["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", \
+         "TWS", "DWS", "TLS", "DLS", \
+         "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K ", "L ", "M ", "N ", "O ", \
+         "*", " "]
+distribution = ["a", "a", "a", "a", "a", "a", "a", "a", "a", "b", "b", "c", "c", "d", "d", "d", "d", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "f", "f", "g", "g", "g", "h", "h", "i", "i", "i", "i", "i", "i", "i", "i", "i", "j", "k", "l",    "l", "l", "l", "m", "m", "n", "n", "n", "n", "n", "n", "o", "o", "o", "o", "o", "o", "o", "o", "p", "p", "q", "r", "r", "r", "r", "r", "r","s", "s", "s", "s", "t", "t", "t", "t", "t", "t", "u", "u", "u", "u", "v", "v", "w", "w", "x", "y", "y", "z"]
+
 class Move():
-    def __init__(self, word, board, place, direction, type):
+    def __init__(self, word, board, row, column, direction, prevBoard, \
+                 doNotScoreWord = False, revWordWhenScoring = True):
         self.word = word
         self.board = board
-        self.place = place
-        self.row = place[0]
-        self.col = place[1]
-        self.type = type
+        self.row = row
+        self.col = column
+        self.direction = direction
+        self.prevBoard = prevBoard
+        self.dnsw = doNotScoreWord
+        self.rwws = revWordWhenScoring
         
     def comp(self, other):
-        try:
-            return self.score+self.valuation>other.score+other.valuation
-        except:
+        return self.score+self.valuation>other.score+other.valuation
+
+    def getScore(self):
+        self.score = self.prevBoard.trulySpelledScore(self)
+        return self.score
+    def getEvaluation(self, rack):
+        nR = rack[:]
+        for letter in self.word:
             try:
-                return self.score+self.valuation>other["score"]+other["valuation"]
+                nR.remove(letter)
             except:
-                return False
-
-class Proxy(player.Player):
-    def __init__(self, rack, board, distribution, score, dict, vals, isFirstTurn):
-        self.distribution = distribution[:]
-        self.overdist = distribution[:]
-        #print(id(distribution), id(self.distribution), id(self.overdist))
-        #print(distribution is self.distribution, self.distribution is self.overdist)
-        #print(len(self.distribution))
-        #print(len(self.overdist))
-        self.extraList = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", \
-             "TWS", "DWS", "TLS", "DLS", \
-             "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "Kf ", "L ", "M ", "N ", "O ", \
-             "*", " "]
-        self.isFirstTurn = isFirstTurn
-        self.board = board       
-        self.score = score
-        self.scores = {"a": 1, "c": 3, "b": 3, "e": 1, "d": 2, "g": 2,
-       "f": 4, "i": 1, "h": 4, "k": 5, "j": 8, "m": 3,
-       "l": 1, "o": 1, "n": 1, "q": 10, "p": 3, "s": 1,
-       "r": 1, "u": 1, "t": 1, "w": 4, "v": 4, "y": 4,
-       "x": 8, "z": 10, "?" : 0}
-        
-        self.scoreList = ['TWS', 'DWS', 'TLS', 'DLS']
-        self.rack = rack
-        self.drawTiles()
-        #super(Proxy, self).drawTiles()
-        self.ospd = dict
-        self.rv = vals
-        self.turnrotation = 0
-    def gac(self, iterable, minDepth, maxDepth):
-        allWords = []
-        for depth in range(minDepth, maxDepth + 1): #only needs to get length 3 and above
-            for word in func.permutations(iterable, depth):
-                allWords.append("".join(word))
-        return allWords
-    
-    def gacc(self, iterable, maxDepth):
-        allWords = self.gac(iterable, 3, maxDepth)
-        wordsWithBlanks = {}
-        alreadyChecked = []
-        naw = allWords[:]
-        for i in range(len(naw)):
-            word = naw[i]
-            if "?" in word:
-                allWords.remove(word)
-                for l in func.ascii_uppercase:
-                    nWord = list(word)
-                    q = nWord.index("?")
-                    nWord[q] = l
-                    nWord = self.tostr(nWord)
-                    if self.checkWord(nWord):
-                        allWords.append(nWord)
-                        alreadyChecked.append(nWord)
-                        wordsWithBlanks[nWord] = q
-        if len(allWords)>0:
-            allWords.pop(0)
-        correctWords = []
-        for word in allWords:
-            if word in alreadyChecked:
-                correctWords.append(word)
-            elif self.checkWord(word):
-                correctWords.append(word)
-
-        return correctWords#, wordsWithBlanks
-    def tostr(self, l):
-        h = ""
-        for i in l: h += i
-        return h
-    def checkWord(self, word):
-        if len(word) > 1:
-            try:
-                subdict = open("resources/" + word[:2] + ".txt").read().split()
-            except:
-                return False
-            if word.upper() in subdict:
-                return True
-            return False
-        return False
-        
-        
-
-    def addKey(self, dictToCheck, key, value):
-        super(Proxy, self).addKey(dictToCheck, key, value)
-        
-    def drawTiles(self):
-        #print("PROXY IS DRAWING TILES")
-        #print("RACK:",self.rack)
-##        if self.distribution:
-        #print(self.distribution)
-        if len(self.rack) < 7:
-            while len(self.rack) < 7 and len(self.distribution) > 0:
-                letter = func.choice(self.distribution)
-                self.distribution.remove(letter)
-                self.rack.append(letter.upper())
-                #print(letter, end="")
-##        else:
-##             if len(self.rack) < 7:
-##                while len(self.rack) < 7 and len(func.distribution) > 0:
-##                    letter = func.choice(func.distribution)
-##                    func.distribution.remove(letter)
-##                    self.rack.append(letter.upper())
-##                    print(letter, end="")
-        print()
-    #Here's some functions that are in the player class but unfortunately could
-    #not be supered because they had to be changed slightly
-    def checkWholeBoard(self, boardToCheck, isFirstTurn):
-        touchingList = []
-        for row in range(1, 16):
-            for column in range(1, 16):
-                attributes = self.getAttributes("%d,%d" % (row, column), boardToCheck)
-                if attributes['text'][0] != " " and attributes['text'] not in self.scoreList:
-                    touchingList.append(attributes)
-        touchingList = self.removeDuplicates(touchingList)
-        for item in touchingList:
-            if item['numTouchingLetters'] == 0:
-                return False, "Must Be Connected2"
-        words = self.getBoardWords(boardToCheck)
-        #Checking that words are contiguous algorithm is below.
-        if isFirstTurn and boardToCheck[8][8][0] != "*":
-            pass
-        else:
-            if isFirstTurn and boardToCheck[8][8][0] == "*":
-                return False, "Must Touch Star"
-            else:
-                if words:
-                    for word in words:
-                        letters = words[word]
-                        totalTouching = 0
-                        for letter in letters:
-                            totalTouching += letter['numTouchingLetters']
-
-                        if isFirstTurn:
-                            minimumTouching = (len(word) * 2) - 2
-                        else:
-                            minimumTouching = (len(word) * 2) - 1
-
-                        if not(totalTouching >= minimumTouching):
-                            return False, "Must Be Connected"
-                else:
-                    return False
-        
-        incorrectWords = []
-        if words and len(words) < 1:
-            return False
-        else:
-            if words:
-                for word in words:
-                    if not(self.checkWord(word.lower())):
-                        incorrectWords.append(word)
-            else:
-                return False
-            
-        if incorrectWords:
-            return False, "Invalid Word", incorrectWords
-        else:
-            return True, words
-            
-    def getAttributes(self, place, boardToCheck):
-        touching = {}
-        place = place.split(",")
-        row = int(place[0])
-        column = int(place[1])
-        numTouching = 0
-        if not row-1<1:
-            try:
-                up = boardToCheck[row-1][column]
-            except:
-                up = "NA"
-            touching['up'] = up
-            if up.upper() in func.ascii_uppercase:
-                numTouching += 1
-
-        else:
-            touching['up'] = 'NA'
-            
-        if not row+1>15:
-            try:
-                down = boardToCheck[row+1][column]
-            except:
-                down = "NA"
-            touching['down'] = down
-            if down.upper() in func.ascii_uppercase:
-                numTouching += 1
-
-        else:
-            touching['down'] = 'NA'
-
-        if not column+1 > 15:
-            try:
-                right = boardToCheck[row][column+1]
-            except:
-                right = "NA"
-            touching['right'] = right
-            if right.upper() in func.ascii_uppercase:
-                numTouching += 1
-        else:
-            touching['right'] = 'NA'
-
-        if not column-1 < 1:
-            try:
-                left = boardToCheck[row][column-1]
-            except:
-                left = "NA"
-            touching['left'] = left
-            if left.upper() in func.ascii_uppercase:
-                numTouching += 1
-        else:
-            touching['left'] = 'NA'
-            
-
-        touching['numTouchingLetters'] = numTouching
-        touching['row'] = row
-        touching['column'] = column
-        touching['text'] = boardToCheck[row][column]
-        return touching
-
-    def getEvaluation(self, move):
-        word = move["word"]
-        p_xR = self.rack[:]
-        p_xR.sort()
-        for i in word:
-            if i in p_xR:
-                p_xR.remove(i)
-        try:
-            move["valuation"] = self.rv["".join(j for j in p_xR)]
-        except:
-            move["valuation"] = 0
-    def ge(self, simexch):
-        p_xRs = self.rack[:]
-        p_xRs.sort()
-        for i in simexch:
-            if i in p_xRs:
-                p_xRs.remove(i)
-        q = "".join(j for j in p_xRs)
-        if q=="":
-            return 0
-        else:
-            return self.rv[q]
-    
-    def playAllWords(self, maxlength = None): 
-##        if self.board[8][8] == "*":
-##            self.isFirstTurn = True
-##        else:
-##            self.isFirstTurn = False
-            
-        allMoves = []
-        allWords = self.removeDuplicates(self.gacc(self.rack, 7))
-        boards = 0
-        possboards = 0
-        longwords = []
-        if len(allWords) > 0:
-            currmaxlen = min(min(len(self.rack), 7), max(len(i) for i in allWords))
-            print("PROXY {0}: Generating.".format(player.tiles.genidstr(id(self))))
-            for word in allWords:
-                if currmaxlen <= len(word):
-                    possboards += 148
-                    longwords.append(word)
-            for word in longwords:
-                    for row in range(1, len(self.board)):
-                        for column in range(1, len(self.board[row])):
-                            for direction in ["A", "D"]:
-                                
-                                nbo = self.rNab()
-                                #d = self.getDepth(self.getAttributes("%d,%d" % (row, column), nbo), direc=direction)
-                                d = self.distances(int(row), int(column), direction)
-                                if d >= len(word):
-                                    if self.placeWord(word, nbo, [row, column], direction):
-                                        if self.checkWholeBoard(nbo, self.isFirstTurn)[0]:
-                                            qbox = {"word":word, "board":nbo, "place":[row, column], "direction":direction, 'type':'  Play  '}
-                                            self.getScore(qbox)
-                                            #print(qbox, qbox["score"])
-                                            self.getEvaluation(qbox)
-                                            allMoves.append(qbox)
-                                            #print(qbox)
-
-
-            return allMoves
-
-        else:
-            print("RELOAD ERROR {0}{1}{2}".format(player.tiles.genstr(), player.tiles.genstr(), player.tiles.genstr()))
-            
-            self.exchange()
- #           self.drawTiles()
-            return "Non"
-
-    def getBest(self, plays):
-        bestplay = {"score":0, "valuation":0}
-        for play in plays:
-            if play is not None:
-                if (bestplay == {"score":0, "valuation":0} and play["score"] > 0) or play["score"]+play["valuation"] > bestplay["score"]+bestplay["valuation"]:
-                    bestplay = play
-                self.pm(play)
-        return bestplay
-    def takeTurn(self, maxlen = None):
-        print("PROXY {0}: Generating.".format(player.tiles.genidstr(id(self))))
-        plays = self.playAllWords(maxlength = maxlen)
-        if type(plays)==type(""):
-            #print("ABOUT TO BREAK", plays)
-            self.distribution = self.overdist[:]
-            self.rack = []
-            self.drawTiles()
-            print(self.rack)
-            print(self.distribution)
-            print(self.overdist)
-            print(id(self.distribution))
-            print(id(self.overdist))
-            self.takeTurn()
-            #pass
-        else:
-       # print("EJI", plays)
-            plays.extend(self.exchange())
-            pass
-        #print("EJI", plays)
-        if plays != "Non":
-            self.turnrotation += 1
-            self.nondisplay = False
-            bestplay = self.getBest(plays)
-            if bestplay == {"score":0, "valuation":0}:
-                self.turnrotation += 1
-                if self.turnrotation > 2:
-##                    self.exchange()
-####                    self.drawTiles()
-                    self.nondisplay = True
-                else:
-                    self.takeTurn()
-            else:
-                play = bestplay
-            if not self.nondisplay and bestplay != {"score":0, "valuation":0}:
-                self.turnrotation += 1
-                return bestplay
-##                self.score += bestplay["score"]
-##                self.board = bestplay["board"]
-##                if bestplay["type"] == "Exchange":
-##                    self.commit_exch(bestplay)
-##                else:
-##                    for letter in bestplay["word"]:
-##                        self.rack.remove(letter)
-            
-    def placeWord(self, word, board, place, direction, ignore=None): 
-        start = board[int(place[0])][int(place[1])]
-        length = len(word)
-        row = int(place[0])
-        column = int(place[1])
-        score = 0
-        for num in range(0, length):
-
-            if direction == 'A':
-                try:
-                    if board[row][column] not in func.ascii_uppercase: #checks if space isn't letter
-                        if board[row][column] in self.scoreList:
-                            pass 
-                        board[row][column] = word[num]
-                        
-                        column += 1
-                    else:
-                        if board[row][column] != ignore:
-                            return False
-                except:
-                    return False
-            else:
-                try:
-                    if board[row][column] not in func.ascii_uppercase:
-                        board[row][column] = word[num]
-                        row += 1
-                    else:
-                        return False
-                except:
-                    return False
-        return True
-
-    def getBoardWords(self, boardToCheck):
-        touchingList = []
-        for row in range(1, 16):
-            for column in range(1, 16):
-                attributes = self.getAttributes("%d,%d" % (row, column), boardToCheck)
-                if attributes['text'][0] != " " and attributes['text'] not in self.scoreList:
-                    touchingList.append(attributes)
-        touchingList = self.removeDuplicates(touchingList)
-        for item in touchingList:
-            if item['numTouchingLetters'] == 0:
-                return False, "Must Be Connected"
-        preservedList = []
-        for item in touchingList:
-            preservedList.append(item)
-        words = {}
-        touchingListAcross = []
-        touchingListDown = []
-        for item in touchingList:
-            touchingListAcross.append(item)
-            touchingListDown.append(item)
-        usedLetters = []
-        while touchingList:
-            wordAcross = ""
-            wordStart = touchingList[0]
-            column = wordStart['column']
-            row = wordStart['row']
-            wordLettersAcross = [wordStart]
-            wordAcross += wordStart['text'][0]
-            while wordStart['right'][0] != " " and wordStart['right'] != "NA":
-                right = wordStart['right']
-                column += 1
-                for item in touchingList:
-                    if item['text'] == right and \
-                       item['column'] == column and \
-                       item['row'] == row and \
-                       item in touchingListAcross:
-                        touchingListAcross.remove(item)
-                        wordStart = item
-                        wordAcross += wordStart['text'][0]
-                        wordLettersAcross.append(wordStart)
-                if wordStart in usedLetters:
-                    break
-                else:
-                    usedLetters.append(wordStart)
-            usedLetters = []
-            wordDown = ""
-            wordStart = touchingList[0]
-            column = wordStart['column']
-            row = wordStart['row']
-            wordLettersDown = [wordStart]
-            wordDown += wordStart['text'][0]
-            while wordStart['down'][0] != " " and wordStart['down'] != "NA":
-                down = wordStart['down']
-                row += 1
-                for item in touchingList:
-                    if item['text'] == down and \
-                       item['column'] == column and \
-                       item['row'] == row and \
-                       item in touchingListDown:
-                        touchingListDown.remove(item)
-                        wordStart = item
-                        wordDown += wordStart['text'][0]
-                        wordLettersDown.append(wordStart)
-                if wordStart in usedLetters:
-                    break
-                else:
-                    usedLetters.append(wordStart)
-            touchingList.remove(touchingList[0])
-            if len(wordAcross) > 1:
-                words[wordAcross] = wordLettersAcross
-            if len(wordDown) > 1:
-                words[wordDown] = wordLettersDown
-
-        return words
-
-    def getScore(self, moveAtts):
-        row = moveAtts["place"][0]
-        column = moveAtts["place"][1]
-        specialScores = {"TLS":[], "DLS":[], "DWS":[], "TWS":[]}
-        wordsToScore = [moveAtts["word"]]
-        for letter in range(len(moveAtts["word"])):
-            sp = self.board[row][column]
-            if sp == "TWS":
-                specialScores["TWS"] = [moveAtts["word"]]
-            elif sp == "DWS" or sp == "*":
-                specialScores["DWS"] = [moveAtts["word"]]
-            elif sp == "TLS":
-                specialScores["TLS"].append(moveAtts["word"][letter])
-            elif sp == "DLS":
-                specialScores["DLS"].append(moveAtts["word"][letter])
-            if moveAtts["direction"] == "A":
-                spAtts = self.getAttributes("%d,%d" % (row, column), moveAtts["board"])
-                if spAtts["up"] in func.ascii_uppercase:
-                    nrow = row
-                    word = spAtts["text"]
-                    while spAtts["up"] in func.ascii_uppercase:
-                        word += spAtts["up"]
-                        if nrow + 1 < 16:
-                            nrow += 1
-                            spAtts = self.getAttributes("%d,%d" % (nrow, column), moveAtts["board"])
-                        else:
-                            break
-                    if len(word) == 3:
-                        word = word[:2]
-                    wordsToScore.append(word)
-                    
-                spAtts = self.getAttributes("%d,%d" % (row, column), moveAtts["board"])
-                if spAtts["down"] in func.ascii_uppercase:
-                    nrow = row
-                    word = spAtts["text"]
-                    while spAtts["down"] in func.ascii_uppercase:
-                        word += spAtts["down"]
-                        if nrow + 1 < 16:
-                            nrow += 1
-                            spAtts = self.getAttributes("%d,%d" % (nrow, column), moveAtts["board"])
-                        else:
-                            break
-                    if len(word) == 3:
-                        word = word[:2]
-                    wordsToScore.append(word)
-                column += 1
-            else:
-                spAtts = self.getAttributes("%d,%d" % (row, column), moveAtts["board"])
-                if spAtts["right"] in func.ascii_uppercase:
-                    ncol = column
-                    word = spAtts["text"]
-                    while spAtts["right"] in func.ascii_uppercase:
-                        word += spAtts["right"]
-                        if ncol + 1 < 16:
-                            ncol += 1
-                            spAtts = self.getAttributes("%d,%d" % (row, ncol), moveAtts["board"])
-                        else:
-                            break
-                    if len(word) == 3:
-                        word = word[:2]
-                    wordsToScore.append(word)
-                    
-                spAtts = self.getAttributes("%d,%d" % (row, column), moveAtts["board"])
-                if spAtts["left"] in func.ascii_uppercase:
-                    ncol = column
-                    word = spAtts["text"]
-                    while spAtts["left"] in func.ascii_uppercase:
-                        word += spAtts["left"]
-                        if ncol + 1 < 16:
-                            ncol += 1
-                            spAtts = self.getAttributes("%d,%d" % (row, ncol), moveAtts["board"])
-                        else:
-                            break
-                    if len(word) == 3:
-                        word = word[:2]
-                    wordsToScore.append(word)
-                row += 1
-
-        wordScore = 0
-        for letter in moveAtts["word"]:
-            wordScore += self.scores[letter.lower()]
-
-        for item in specialScores.items():
-            scoreType = item[0]
-            scoreLetters = item[1]
-            if scoreType == "DLS":
-                if specialScores.get("DWS"):
-                    for i in range(2):
-                        for letter in scoreLetters:
-                            wordScore += self.scores[letter.lower()]
-                elif specialScores.get("TWS"):
-                    for i in range(3):
-                        for letter in scoreLetters:
-                            wordScore += self.scores[letter.lower()]
-                else:
-                    for letter in scoreLetters:
-                        wordScore += self.scores[letter.lower()]
-            elif scoreType == "TLS":
-                if specialScores.get("DWS"):
-                    for i in range(2):
-                        for count in range(2):
-                            for letter in scoreLetters:
-                                wordScore += self.scores[letter.lower()]
-                else:
-                    for count in range(2):
-                        for letter in scoreLetters:
-                            wordScore += self.scores[letter.lower()]
-
-        for item in specialScores.items(): #Double and Triple Word have to be evaluated last
-            scoreType = item[0]
-            scoreLetters = item[1]
-            if scoreType == "DWS":
-                try:
-                    if scoreLetters[0] == moveAtts["word"]:
-                        wordScore *= 2
-                except:
-                    pass
-            elif scoreType == "TWS":
-                try:
-                    if scoreLetters[0] == moveAtts["word"]:
-                        wordScore *= 3
-                except:
-                    pass
-
-        for word in wordsToScore:
-            if word != moveAtts["word"]:
-                for letter in word:
-                    wordScore += self.scores[letter.lower()]
-        if len(moveAtts["word"]) == 7:
-            wordScore += 50
-        moveAtts["score"] = wordScore
-        
-
-    def rNab(self):
-        nbo = []
-        for row in self.board:
-            nbo.append([])
-            for col in row:
-                nbo[-1].append(col)
-        return nbo
-    def exchange(self):
-        nar = self.gac(self.rack, 1, len(self.rack))
-        vals = {}
-        for c in nar:
-            vals[self.ge(c)] = c
-        exchs = []
-        ep = vals.copy() 
-        for i in range(min(len(vals), 10)):
-            #print(i)
-            ev = max(ep.keys())
-            exch = vals[ev]
-           # print("eijf", (ev, exch))
-            exchs.append((exch, ev))
-            #print(exchs)
-            ep.pop(ev)
-        ret = []
-        for j in exchs:
-            q = self.gmfev(j)
-            #print(j, q)
-            ret.append(q)
-        return ret
-
-    def gmfev(self, exch):
-        move = {"score":0, "word":"".join(i for i in sorted(list(exch[0]))), "valuation":exch[1],"board":self.board, "direction":" ", "place":[" ", " "], 'type':'Exchange'}
-        return move
-    
-    def commit_exch(self, exch):
-        if type(exch) == type({}):
-            exch = exch["word"]
-        #print(exch)
-        nar = self.rack[:]
-        for i in exch:
-            #print(i)
-            nar.remove(i)
-        self.rack = nar[:]
-        #self.drawTiles()
-        
-    def distances(self, row_num, col_num, direc):
-        letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        if not str(col_num).isdigit():
-            col_num = ord(col_num.upper()) - ord('A') + 1
-        col = [row[col_num] for row in self.board]
-        row = self.board[row_num]
-        rightDepth = next((i for i, c in enumerate(row[col_num+1:]) if c in letters), 15-col_num)
-        leftDepth = next((i for i, c in enumerate(row[col_num-1:0:-1]) if c in letters), col_num-1)
-        downDepth = next((i for i, c in enumerate(col[row_num+1:]) if c in letters), 15-row_num)
-        upDepth = next((i for i, c in enumerate(col[row_num-1:0:-1]) if c in letters), row_num-1)
-        
-        if rightDepth is None:
-            rightDepth = 0
-        if leftDepth is None:
-            leftDepth = 0
-        if downDepth is None:
-            downDepth = 0
-        if upDepth is None:
-            upDepth = 0
-            
-        if direc is None:
-            if leftDepth == 0 or rightDepth == 0:
-                return upDepth + downDepth
-            elif upDepth == 0 or downDepth == 0:
-                return leftDepth + rightDepth
-        else:
-            if direc == "A":
-                return rightDepth
-            elif direc=="D":
-                return downDepth
-            elif direc == "A1":
-                return leftDepth + rightDepth
-            else:
-                return upDepth + downDepth
-##        return {
-##                'right': next((i for i, c in enumerate(row[col_num+1:]) if c in letters), 15-col_num),
-##                'left': next((i for i, c in enumerate(row[col_num-1:0:-1]) if c in letters), col_num-1),
-##                'down': next((i for i, c in enumerate(col[row_num+1:]) if c in letters), 15-row_num),
-##                'up': next((i for i, c in enumerate(col[row_num-1:0:-1]) if c in letters), row_num-1)
-##        }    
-    def getDepth(self, attributes, direc=None):
-        upDepth = 0
-        downDepth = 0
-        leftDepth = 0
-        rightDepth = 0
-        #print(attributes, direc)
-        if attributes["up"] in self.extraList:
-            row = attributes["row"]
-            column = attributes["column"]
-            newLetter = self.getAttributes("%d,%d" % (column, row-1)[::-1], self.board)
-            while newLetter["up"] in self.extraList:
-                upDepth += 1
-                row = newLetter["row"]
-                column = newLetter["column"]
-                newLetter = self.getAttributes("%d,%d" % (column, row-1)[::-1], self.board)
-                
-        if attributes["down"] in self.extraList:
-            row = attributes["row"]
-            column = attributes["column"]
-            newLetter = self.getAttributes("%d,%d" % (column, row+1)[::-1], self.board)
-            while newLetter["down"] in self.extraList:
-                downDepth += 1
-                row = newLetter["row"]
-                column = newLetter["column"]
-                newLetter = self.getAttributes("%d,%d" % (column, row+1)[::-1], self.board)
-                
-        if attributes["left"] in self.extraList:
-            row = attributes["row"]
-            column = attributes["column"]
-            newLetter = self.getAttributes("%d,%d" % (column-1, row)[::-1], self.board)
-            while newLetter["left"] in self.extraList:
-                leftDepth += 1
-                row = newLetter["row"]
-                column = newLetter["column"]
-                newLetter = self.getAttributes("%d,%d" % (column-1, row)[::-1], self.board)
-                
-        if attributes["right"] in self.extraList:
-            row = attributes["row"]
-            column = attributes["column"]
-            newLetter = self.getAttributes("%d,%d" % (row, column+1), self.board)
-            while newLetter["right"] in self.extraList:
-                rightDepth += 1
-                row = newLetter["row"]
-                column = newLetter["column"]
-                newLetter = self.getAttributes("%d,%d" % (row, column+1), self.board)
-        if direc is None:
-            if leftDepth == 0 or rightDepth == 0:
-                return upDepth + downDepth
-            elif upDepth == 0 or downDepth == 0:
-                return leftDepth + rightDepth
-        else:
-            if direc == "A":
-                return rightDepth
-            elif direc=="D":
-                return downDepth
-            elif direc == "A1":
-                return leftDepth + rightDepth
-            else:
-                return upDepth + downDepth
-            
-class CPU(player.Player):
-    def __init__(self, root, rack, distribution, otherPlayer):
-        self.root = root
-        self.otherPlayer = otherPlayer
-        if distribution != ():
-            self.distribution = distribution
-            self.pd = self.distribution[:]
-            self.de = True #distexisted
-        else:
-            self.distribution = False
-            self.pd = func.distribution[:]
-            self.de = False
-        self.name = "CPU"
-        self.extraList = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", \
-             "TWS", "DWS", "TLS", "DLS", \
-             "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K ", "L ", "M ", "N ", "O ", \
-             "*", " "]
-        self.board = [[" ", "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K ", "L ", "M ", "N ", "O "],
-            ['01', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', 'TWS', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS'],
-            ['02', ' ', 'DWS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'DWS', ' '],
-            ['03', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' '],
-            ['04', 'DLS', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' ', 'DLS'],
-            ['05', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' '],
-            ['06', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' '],
-            ['07', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', ' '],
-            ['08', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', '*', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS'],
-            ['09', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', ' '],
-            ['10', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' '],
-            ['11', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' '],
-            ['12', 'DLS', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' ', 'DLS'],
-            ['13', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' '],
-            ['14', ' ', 'DWS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'DWS', ' '],
-            ['15', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', 'TWS', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS']]        
-        self.score = 0
-        self.scores = {"a": 1, "c": 3, "b": 3, "e": 1, "d": 2, "g": 2,
-       "f": 4, "i": 1, "h": 4, "k": 5, "j": 8, "m": 3,
-       "l": 1, "o": 1, "n": 1, "q": 10, "p": 3, "s": 1,
-       "r": 1, "u": 1, "t": 1, "w": 4, "v": 4, "y": 4,
-       "x": 8, "z": 10, "?" : 0}
-        
-        self.scoreList = ['TWS', 'DWS', 'TLS', 'DLS']
-        self.rack = rack
-        self.drawTiles()
-        #super(CPU, self).drawTiles()
-        #OSPD stands for official scrabble player's dictionary
-        #taken from http://www.puzzlers.org/pub/wordlists/ospd.txt #/Volumes/PYTHONDISK/
-        try:
-            ospd = open("newDict.txt").read().split("\n") #taken from https://raw.githubusercontent.com/xjtian/PyScrabble/master/wordlists/OSPD4_stripped.txt
-            self.ospd = []
-            for word in ospd:
-                self.ospd.append(word.strip())
-        except:
-            popup(self.root, "Dictionary File Not Found", "Dictionary File Not Found\n\n\n", 500, 500)
-            end()
-        self.turnrotation = 0
-        self.valuations = {"?":0}
-        ospdcomp=""
-        for i in self.ospd:
-            ospdcomp += i
-
-        for letter in func.ascii_uppercase:
-            self.valuations[letter] = ospdcomp.count(letter)
-        #Leaves from http://quackle.cvs.sourceforge.net/viewvc/quackle/quackle/data/strategy/twl06/superleaves?revision=1.1
-        valut = open("leaves.txt")
-        self.rv = {}
-        q = valut.read().split()
-       # print(q[:20])
-       # print(len(q))
-        for i in range(0, len(q), 2):
-            self.rv[q[i]] = float(q[i+1])
-            #print(q[i], q[i+1])
-    def gac(self, iterable, minDepth, maxDepth):
-        allWords = []
-        for depth in range(minDepth, maxDepth + 1): #only needs to get length 3 and above
-            for word in func.permutations(iterable, depth):
-                allWords.append("".join(word))
-        return allWords
-
-    def getThroughWords(self, board, row, column, direc):
-        h=board[row][column]
-        if h not in self.extraList:
-            d = self.distances(row, column, direc+"1")
-            #print(d)
-            if direc=="A":
-                d1 = self.distances(row, column, "L")
-                d2 = self.distances(row, column, "R")
-            else:
-                d1 = self.distances(row, column, "U")
-                d2 = self.distances(row, column, "D")
-            q = self.rack[:]
-            
-            q.append(h)
-            words = self.gacc(q, d)
-            try:
-                pattern = r".{0,%d}%s.{0,%d}" % (min(1, max(1, d1)), h, min(1, max(1, d2))) #min(1, x) gets past sre_compile errors: pattern-str of {1, 0} is not allowed.
-            except:
-                #print("OVERARCH ERROR {0}{1}{2}".format(player.tiles.genstr(), player.tiles.genstr(), player.tiles.genstr())) 
-
-                pattern = r"QQQQQQQQQPQPQPQPQPQPQPWOJEFPOAIEWJPFOIWEJF"
-            cullW = []
-            for word in words:
-                try:
-                    if func.match(pattern, word):
-                        cullW.append(word)
-                except:
-                    pas
-                    #print("OVERARCH ERROR {0}{1}{2} at {3}".format(player.tiles.genstr(), player.tiles.genstr(), player.tiles.genstr(), pattern))
-            return cullW, h
-        else:
-            return [], 'a'
-
-    def greedy(self, move, moves, words):
-        self.greedyNum += 1
-        m = 1.5
-        if move["score"]>=30:
-            return True
-        if len(move["word"])+2>=max(len(i) for i in words):
-            #print(move["word"])
-            val = move["score"] #+ move["valuation"]
-            avg = 0
-            for i in moves:
-                avg += i["score"]
- #               avg += i["valuation"]
-            avg /= len(moves)+1
-            #print(val, m, avg)
- #           func.sleep(1)
-            if val >= m*avg:
-                return True
-        return False
-
-    def testGreedy(self, move):
-        if move["score"]>=15:
-            return True
-        return False
-    
-    def testThrough(self):
-        print("Testing through...in alpha")
-        allMoves = []
-        if self.board[8][8] == "*":
-            self.isFirstTurn = True
-        else:
-            self.isFirstTurn = False
-        for row in range(1, len(self.board)):
-            for column in range(1, len(self.board[row])):
-                for direction in ["A", "D"]:
-                    nbo = self.rNab()
-                    words = self.getThroughWords(nbo, row, column, direction)
-                    h = words[1]
-                    words = words[0]
-                    for word in words:
-                        nbo = self.rNab()
-                        extrs = self.extr(nbo, len(word))
-                        r = row
-                        c = column
-                        if direction == "A":
-                            r -= word.index(h)
-                        else:
-                            c -= word.index(h)
-                        if self.checkSlot(nbo, r, c, direction, word):
-                            print("Valid Slot:", self.getSlot(nbo, r, c, direction, len(word)), word, end="")
-                            d = self.distances(int(row), int(column), direction)
-                            if d >= len(word):
-                                coords = [row, column-word.index(h)] if direction=="D" else [row-word.index(h), column]
-                                if self.placeWord(word, nbo, coords, direction, ignore=h):
-                                    efe = self.checkWholeBoard(nbo, self.isFirstTurn)
-                                    #print(efe[1])
-                                    #if "Invalid" in efe[1]: print(efe[2])
-                                    #self.displayBoard(nbo)
-                                    if efe[0]:
-                                        qbox = {"spec": h, "word":word.strip(), "board":nbo, "place":[row, column], "direction":direction, 'type':'  Play  '}
-                                        try:
-                                            self.getScore(qbox)
-                                            self.getEvaluation(qbox)
-                                            allMoves.append(qbox)
-                                            print()
-                                            print("Found move: ", end = "")
-                                            self.pm(qbox)
-                                            #print(qbox)
-                                            if self.testGreedy(qbox):
-                                                return allMoves
-                                        except:
-                                            print(qbox)
-                                            #raise BaseException
-                                        #print("EXTREME JOY")
-                                        #self.displayBoard(nbo)
-                                    else:
-                                        print("   Invalid")
-                                        #print("EXTREME TEARS") 
-                                        #self.displayBoard(nbo)
-                        else:
-                            print("Invalid Slot:", self.getSlot(nbo, r, c, direction, len(word)), word)
-        return allMoves
-    
-    def gacc(self, iterable, maxDepth):
-        allWords = []
-        wordsWithBlanks = {}
-        alreadyChecked = []
-        for depth in range(3, maxDepth + 1): #only needs to get length 3 and above
-            for word in func.permutations(iterable, depth):
-                allWords.append("".join(word))
-        naw = allWords[:]
-        for i in range(len(naw)):
-            word = naw[i]
-            if "?" in word:
-                allWords.remove(word)
-                for l in func.ascii_uppercase:
-                    nWord = list(word)
-                    q = nWord.index("?")
-                    nWord[q] = l
-                    nWord = self.tostr(nWord)
-                    if self.checkWord(nWord):
-                        allWords.append(nWord)
-                        alreadyChecked.append(nWord)
-                        wordsWithBlanks[nWord] = q
-        if len(allWords)>0:
-            allWords.pop(0)
-        correctWords = []
-        for word in allWords:
-            if word in alreadyChecked:
-                correctWords.append(word)
-            elif self.checkWord(word):
-                correctWords.append(word)
-
-        return correctWords#, wordsWithBlanks
-    def tostr(self, l):
-        h = ""
-        for i in l: h += i
-        return h
-    def checkWord(self, word):
-        if len(word) > 1:
-            try:
-                subdict = open("resources/" + word[:2] + ".txt").read().split()
-            except:
-                return False
-            if word.upper() in subdict:
-                return True
-            return False
-        return False
-        
-        
-
-    def addKey(self, dictToCheck, key, value):
-        super(CPU, self).addKey(dictToCheck, key, value)
-        
-    def drawTiles(self):
-        #print("CPU IS DRAWING TILES")
-        if self.de:
-#            print(self.rack, self.distribution)
-#            print(self.de)
-            if len(self.rack) < 7:
-                while len(self.rack) < 7 and len(self.distribution) > 0:
-                    letter = func.choice(self.distribution)
-                    self.distribution.remove(letter)
-                    self.rack.append(letter.upper())
-                    #print(letter, end="")
-#                    print(letter)
-        else:
-#             print(self.rack, func.distribution)
-#             print(self.de)
-             if len(self.rack) < 7:
-                while len(self.rack) < 7 and len(func.distribution) > 0:
-                    letter = func.choice(func.distribution)
-                    func.distribution.remove(letter)
-                    self.rack.append(letter.upper())
-                    #print(letter, end="")
-#                    print(letter)
-        #print()
-    #Here's some functions that are in the player class but unfortunately could
-    #not be supered because they had to be changed slightly
-    def checkWholeBoard(self, boardToCheck, isFirstTurn):
-        touchingList = []
-        for row in range(1, 16):
-            for column in range(1, 16):
-                attributes = self.getAttributes("%d,%d" % (row, column), boardToCheck)
-                if attributes['text'][0] != " " and attributes['text'] not in self.scoreList:
-                    touchingList.append(attributes)
-        touchingList = self.removeDuplicates(touchingList)
-        for item in touchingList:
-            if item['numTouchingLetters'] == 0:
-                return False, "Must Be Connected2"
-        words = self.getBoardWords(boardToCheck)
-        #Checking that words are contiguous algorithm is below.
-        if isFirstTurn and boardToCheck[8][8][0] != "*":
-            pass
-        else:
-            if isFirstTurn and boardToCheck[8][8][0] == "*":
-                return False, "Must Touch Star"
-            else:
-                if words:
-                    for word in words:
-                        letters = words[word]
-                        totalTouching = 0
-                        for letter in letters:
-                            totalTouching += letter['numTouchingLetters']
-
-                        if isFirstTurn:
-                            minimumTouching = (len(word) * 2) - 2
-                        else:
-                            minimumTouching = (len(word) * 2) - 1
-
-                        if not(totalTouching >= minimumTouching):
-                            return False, "Must Be Connected"
-                else:
-                    return False
-        
-        incorrectWords = []
-        if words and len(words) < 1:
-            return False
-        else:
-            if words:
-                for word in words:
-                    if not(self.checkWord(word.lower())):
-                        incorrectWords.append(word)
-            else:
-                return False
-            
-        if incorrectWords:
-            return False, "Invalid Word", incorrectWords
-        else:
-            return True, words
-            
-    def getAttributes(self, place, boardToCheck):
-        touching = {}
-        place = place.split(",")
-        row = int(place[0])
-        column = int(place[1])
-        numTouching = 0
-        if not row-1<1:
-            try:
-                up = boardToCheck[row-1][column]
-            except:
-                up = "NA"
-            touching['up'] = up
-            if up.upper() in func.ascii_uppercase:
-                numTouching += 1
-
-        else:
-            touching['up'] = 'NA'
-            
-        if not row+1>15:
-            try:
-                down = boardToCheck[row+1][column]
-            except:
-                down = "NA"
-            touching['down'] = down
-            if down.upper() in func.ascii_uppercase:
-                numTouching += 1
-
-        else:
-            touching['down'] = 'NA'
-
-        if not column+1 > 15:
-            try:
-                right = boardToCheck[row][column+1]
-            except:
-                right = "NA"
-            touching['right'] = right
-            if right.upper() in func.ascii_uppercase:
-                numTouching += 1
-        else:
-            touching['right'] = 'NA'
-
-        if not column-1 < 1:
-            try:
-                left = boardToCheck[row][column-1]
-            except:
-                left = "NA"
-            touching['left'] = left
-            if left.upper() in func.ascii_uppercase:
-                numTouching += 1
-        else:
-            touching['left'] = 'NA'
-            
-
-        touching['numTouchingLetters'] = numTouching
-        touching['row'] = row
-        touching['column'] = column
-        touching['text'] = boardToCheck[row][column]
-        return touching
-
-    def getEvaluation(self, move):
-        word = move["word"]
-        p_xR = self.rack[:]
-        p_xR.sort()
-        for i in word:
-            if i in p_xR:
-                p_xR.remove(i)
-        try:
-            move["valuation"] = self.rv["".join(j for j in p_xR)]
-        except:
-            move["valuation"] = 0
-        #print(move)
-        #move["valuation"] += self.lookahead(move, p_xR, move["board"])[0]
-        
-    def ge(self, simexch):
-        p_xRs = self.rack[:]
-        p_xRs.sort()
-        for i in simexch:
-            if i in p_xRs:
-                p_xRs.remove(i)
-        q = "".join(j for j in p_xRs)
-        if q=="":
-            return 0
-        else:
-            return self.rv[q]
-    def c(self, s):
-        if s in self.extraList:
-            return "."
-        else:
-            return s
-    def getSlot(self, board, row, column, direc, length):
-        slot = ""
-        r = row
-        c = column
-        for i in range(length):
-            if r>15 or c>15:
-                return slot, row, column, direc, length
-            slot += self.c(board[r][c])
-            if direc == "A":
-                c += 1
-            else:
-                r += 1
-        return slot, row, column, direc, length
-
-    def checkSlot(self, board, row, column, direc, word):
-        slot = self.getSlot(board, row, column, direc, len(word))
-        if len(slot[0]) == len(word) and func.match(slot[0], word):
-            #print("yes", slot, word)
-            return True
-        else:
-            #print("no", slot, word)
-            return False
-
-    def playAllWords(self, maxlength = None):
-        self.rackonv()
-        if self.board[8][8] == "*":
-            self.isFirstTurn = True
-        else:
-            self.isFirstTurn = False
-        self.greedyNum = 0
-        #print(self.isFirstTurn)
-        print("Loading...This step will take approximately", round(func.uniform(0.9, 1.2), 4), "seconds.")
-        a = func.time()
-        allMoves = []
-        allWords = self.removeDuplicates(self.gacc(self.rack, 7))
-        #print(allWords)
-        print("That step actually took", func.time() - a, "seconds.")
-        boards = 0
-        possboards = 0
-        longwords = []
-        if len(allWords) > 0:
-            currmaxlen = min(min(min(len(self.rack), 7), max(len(i) for i in allWords)), 4)
-            for word in allWords:
-                if currmaxlen <= len(word):
-                    possboards += 300
-                    longwords.append(word)
-            print("Generating...This step will take at most", round(possboards * 0.0023, 4), "seconds.")
-            a = func.time()
-            if self.board[-1] == []:
-                self.board.pop(-1)
-            for word in longwords:
-                    for row in range(1, len(self.board)):
-                        for column in range(1, len(self.board[row])):
-                            for direction in ["A", "D"]:
-                                nbo = self.rNab()
-                                extrs = self.extr(nbo, len(word))
-                               # print("HI")
-                                if self.checkSlot(nbo, row, column, direction, word):
-                                    #print("valid slot")
-                                    d = self.distances(int(row), int(column), direction)
-                                    #print(d)
-                                    if d >= len(word):
-                                        #print("HI1")
-                                        if self.placeWord(word, nbo, [row, column], direction):
-                                            #print("HI2")
-                                            if self.checkWholeBoard(nbo, self.isFirstTurn)[0]:
-                                                qbox = {"word":word, "board":nbo, "place":[row, column], "direction":direction, 'type':'  Play  '}
-                                                self.getScore(qbox)
-                                                self.getEvaluation(qbox)
- #                                               allMoves.append(qbox)
-                                                if self.greedy(qbox, allMoves, allWords):
-                                                    allMoves.append(qbox)
-                                                    self.pm(qbox)
-                                                    print("Greedy:: Break")
-                                                    return [qbox]
-                                                allMoves.append(qbox)
-                                                #print("HI3")
-                                else:
-                                    pass
-                                    #print("invalid slot")
-                            #else:
-                                #print(extrs)
-            print("That step actually took", func.time() - a, "seconds.")
-            #print(len(allMoves))
-            for play in allMoves:
                 pass
- #               self.pm(play)
-            return allMoves
-
+        self.valuation = leavesDict[''.join(i for i in sorted(nR))]
+        return self.valuation
+class Board():
+    def __init__(self, board=None):
+        if board is None:
+            self.board = regBoard
         else:
- #           moves = self.testThrough()
-            moves = False
-            if moves:
-                return moves
-            else:
-                print("Exchanging...")
-                exch = self.exchange()
-                if len(exch)>0:
-                    exch = exch[0]
-                    print("Exchanged Tiles:", exch["word"])
-                    self.commit_exch(exch)
-                    #self.drawTiles()
-                else:
-                    print("CPU does not go this far :(")
-                return "Non"
+            self.board = board
+        self.subdicts = subdicts
+        self.extraList = extraList
 
-    def getBest(self, plays):
-        bestplay = {"score":0, "valuation":0}
-        for play in plays:
- #           self.pm(play)
-            if bestplay == {"score":0, "valuation":0}:
-                bestplay = play
-            if play["score"]+play["valuation"] > bestplay["score"]+bestplay["valuation"]:
-                bestplay = play
- #               self.pm(play)
-            if play.get("spec"):
-                self.pm(play)
-        return bestplay
-    def getBestN(self, plays, n):
-        cSv = 0
-        bPs = []
-        ps = plays[:]
-        for play in plays:
-            pSv = play["score"]+play["valuation"]
-            if play in ps and pSv>cSv:
-                cSv = pSv
-                bPs.append(play)
-                ps.remove(play)
-        #print(bPs)
-    def extr(self, board, l):
-        lc = 15
-        hc = 0
-        lr = 15
-        hr = 0
-        for r in range(1, len(board)):
-            for c in range(1, len(board[r])):
-                if not board[r][c] in self.extraList:
-                    lr = min(lr, r)
-                    hr = max(hr, r)
-                    lc = min(lc, c)
-                    hc = max(hc, c)
-        return lc, hc, lr, hr
-    
-    def takeTurn(self, exch = False):
-        if self.distribution:
-            self.pd = self.distribution[:]
-        else:
-            self.pd = func.distribution[:]
-        plays = self.playAllWords()#maxlength = maxlen)
-        if plays != "Non":
-            if exch:
-                plays.extend(self.exchange())
-                #print(plays)
-            if plays != []:
- #              plays.extend(self.exchange())
-                #plays != []:
-                self.turnrotation += 1
-                self.nondisplay = False
-                bestplays = []
-                pNa = plays[:]
-                #self.getBestN(plays, 7)
-                bestplay = self.getBest(pNa)
-                #self.getBestN(plays, 7)
- #               n = min(len(pNa), 10)
-                #print("\n\n")
-                #print("Plays to Consider:".center(80))
-                #print()
-     #           self.imps()
-                #for i in plays:
-                #    self.pm(i)
-                #print("\n\n\n")
-##                for i in range(n):
-##                    bestplay = self.getBest(pNa)
-##                    if bestplay == {"score":0, "valuation":0}:
-##                        continue
+    def checkWord(self, word):
+        if len(word) > 1:
+            try:
+                if word.upper() in self.subdicts[word[:2]]:
+                    return True
+                return False
+            except:
+                return False
+        return False
+
+    def getWords(self, board):
+        words = []
+        uai = [] #used across indexes
+        udi = [] #used down indexes
+        #Iterate through; find a letter -> follow right/down
+        c = 0
+        for (rIndex, row) in enumerate(board):
+            for (cIndex, col) in enumerate(row):
+                if col not in self.extraList:
+                    nR, nC = rIndex, cIndex
+                    word=collections.OrderedDict()
+                    while uai.count((nR, nC))<1 and \
+                          nR < len(board) and nC < len(board[nR]) and \
+                          board[nR][nC] not in self.extraList:
+                        letter = board[nR][nC]
+                        if word.get(letter):
+                            letter += str(c) #differentiate
+                            c += 1
+                        word[letter] = (nR, nC)
+                        uai.append((nR, nC))
+                        nC += 1
+                    if len(word)>1:
+                        words.append(word)
+                        #yield word
 ##                    else:
-##                        bestplays.append(bestplay)
-##                        pNa.remove(bestplay)
-
-                #print(bestplays)
-    ##            if len(bestplays)>0:
-    ##                bestplay = bestplays[0]
-    ##                #print(bestplays)
-                if bestplay == {"score":0, "valuation":0}:
-                    #print("Something went wrong. Reloading...")
-                    print("Reproxying...")
-                    try:
-                        maxleng = max(len(i) for i in self.gacc(self.rack, 7))
-                    except:
-                        self.turnrotation = 3
-                    self.turnrotation += 1
-                    if self.turnrotation >= 3:
-                        print("Exchanging...")
-                        exch = self.exchange()
-                        if len(exch)>0:
-                            exch = exch[0]
-                            print("Exchanged Tiles:", exch["word"])
-                            self.commit_exch(exch)
-                            #self.drawTiles()
-                        else:
-                            print("CPU does not go this far :(")
-                        return "Non"
-                    else:
-                        self.takeTurn()#maxlen = maxleng - 1)
-                else:
-                    play = bestplay
-
-                    #for i in bestplays:
-    #                        self.pm(i)
-                    #for play in plays:
-                    print()
-                    if play["type"] == "Exchange":
- #                       moves = self.testThrough()
-                        moves = False
-                        if moves:
-                            play = self.getBest(moves)
-                            self.displayBoard(play["board"])
-                            print("Word:", play["word"])
-                            print(self.placonv(play["place"]))
-                            print("Direction:", self.dirconv(play["direction"]))
-                            print("Score:", play["score"])
-                            bestplay = play
-                        else:
-                            print("Exchanged Tiles:", play["word"])
-                            self.commit_exch(play)
-                    else:
-                        self.displayBoard(play["board"])
-                        print("Word:", play["word"])
-                        print(self.placonv(play["place"]))
-                        print("Direction:", self.dirconv(play["direction"]))
-                        print("Score:", play["score"])
-                        #print("Evaluation:", play["valuation"])
-                        #print("Total Score:", play["score"] + play["valuation"])
-                    #self.rackonv()
-                if not self.nondisplay and bestplay != {"score":0, "valuation":0}:
-                    self.turnrotation += 1
-                    self.score += bestplay["score"]
-                    self.board = bestplay["board"]
-                    ignored = 0
-                    if play["type"] != "Exchange":
-                        for letter in bestplay["word"]:
-                            if bestplay.get("spec") == letter:
-                                pass
-                            else:
-                                self.rack.remove(letter)
-            else:
-                self.takeTurn(exch=True)
-        #else:
-            #self.takeTurn(exch=True)
-            
-    def dirconv(self, dirinit):
-        if dirinit == "A":
-            return "Across"
-        return "Down"
-
-    def placonv(self, place):
-        return "Row: %d\nColumn: %s" % (int(place[0]), func.ascii_uppercase[int(place[1])-1])
-
-    def rackonv(self):
-##        pass
-        print("Rack:", end = " ")
-        for i in range(len(self.rack)):
-            if i != len(self.rack)-1:
-                print(self.rack[i], end = ", ")
-            else:
-                print(self.rack[i])
-        #print("\n")
+##                        for index in word.values():
+##                            uai.remove(index)
+                    
+                    nC = cIndex #reset horizontal index
+                    word=collections.OrderedDict()
+                    while udi.count((nR, nC))<1 and \
+                          nR < len(board) and nC < len(board[nR]) and \
+                          board[nR][nC] not in self.extraList:
+                        letter = board[nR][nC]
+                        if word.get(letter):
+                            letter += str(c) #differentiate
+                            c += 1
+                        word[letter] = (nR, nC)
+                        udi.append((nR, nC))
+                        nR += 1
+                    if len(word)>1:
+                        words.append(word)
+                        #yield word
+##                    else:
+##                        for index in word.values():
+##                            udi.remove(index)
         
+        return [self.minimize(word) for word in words]
+
+    def minimize(self, wordDict):
+        word = ''.join(i[0] for i in wordDict.keys())
+        newDict = collections.OrderedDict()
+        currentPositions = {letter: 0 for letter in word}
+        for (letter, place) in wordDict.items():
+            if len(letter) == 0:
+                newDict[letter] = place
+            else:
+                addStr = ''
+                if currentPositions[letter[0]] != 0:
+                    addStr = str(currentPositions[letter[0]])
+                newDict[letter[0] + addStr] = place
+                currentPositions[letter[0]] += 1
+        return newDict
+    
+    def expandFrom(self, point, places, extendedFrom, ):
+        assert point not in extendedFrom
+        
+        usedPlaces = [point]
+        
+        rT, cT = point
+        cT += 1
+        while (rT, cT) in places:
+            usedPlaces.append((rT, cT))
+            cT += 1
+            
+        cT = point[1]
+        cT -= 1
+        while (rT, cT) in places:
+            usedPlaces.append((rT, cT))
+            cT -= 1
+
+        cT = point[1]
+        rT += 1
+        while (rT, cT) in places:
+            usedPlaces.append((rT, cT))
+            rT += 1
+
+        rT = point[0]
+        rT -= 1
+        while (rT, cT) in places:
+            usedPlaces.append((rT, cT))
+            rT -= 1
+        return usedPlaces
+    
+    def removeDuplicates(self, oldList):
+        return [i for i in set(oldList)]
+##        newList = []
+##        for item in oldList:
+##          if item not in newList:
+##            newList.append(item)
+##        oldList = newList
+##        return newList
+    
+    def checkBoard(self, board):
+        if board[0] != [" ", "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K ", "L ", "M ", "N ", "O "]:
+            return False
+        if [i[0] for i in board] != [' ', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15']:
+            return False
+        if board[8][8] == "*":
+            return False
+        
+        words = self.getWords(board)
+        correctWords = [word for word in words if self.checkWord(''.join(letter[0] for letter in word.keys()))]
+        if len(correctWords) < len(words):
+            return False
+        word=correctWords
+        
+        places = [value for word in words for value in word.values()]
+        top = places[0]
+        extendedFrom = []
+        usedPlaces = self.expandFrom(top, places, extendedFrom)
+        l = [coord for place in places for coord in place]
+        #Extend to the edge of the board
+        for j in range(min(l), max(l)+1):
+            np = usedPlaces[:]
+            for i in np:
+                try:
+                    usedPlaces.extend(self.expandFrom(i, places, extendedFrom))
+                    usedPlaces = self.removeDuplicates(usedPlaces)
+                    extendedFrom.append(i)
+                  #  if sorted(usedPlaces) == sorted(places):
+                        #return True
+                except AssertionError:
+                    pass
+                
+        #if any place wasn't used return false
+        for place in places:
+            if place not in usedPlaces:
+                return False
+        return True
+    
+    def getPlaces(self, board):
+        words = [word for word in self.getWords(board) if self.checkWord(''.join(letter[0] for letter in word.keys()))]
+        places = [value for word in words for value in word.values()]
+        return places
+
+    def trulySpelledScore(self, move):
+        self.scores = {"a": 1, "c": 3, "b": 3, "e": 1, "d": 2, "g": 2,
+                   "f": 4, "i": 1, "h": 4, "k": 5, "j": 8, "m": 3,
+                   "l": 1, "o": 1, "n": 1, "q": 10, "p": 3, "s": 1,
+                   "r": 1, "u": 1, "t": 1, "w": 4, "v": 4, "y": 4,
+                   "x": 8, "z": 10}
+        oldWords = self.getWords(self.board)
+        allWords = self.getWords(move.board.board)
+        newWords = [word for word in allWords if word not in oldWords]
+##        print(oldWords)
+##        print(allWords)
+##        print(newWords)
+        wordScore = 0
+        wordMult = 1
+        scored = collections.OrderedDict()
+        c=0
+
+##        print(move.word)
+##        print(move.row, move.col)
+##        print(move.dnsw, move.rwws)
+        if not move.dnsw:
+            if move.rwws:
+                sw = reversed(move.word)
+                im = 1
+            else:
+                sw = move.word
+                im = -1
+            for (index, letter) in enumerate(sw):
+                row = move.row
+                col = move.col
+                
+                if move.direction == 'D':
+                    row -= index*im
+                else:
+                    col -= index*im
+                
+                if row>15 or col>15:
+                    print('fa')
+                    return 0
+                lettMult = 1
+                oldLetter = self.board[row][col]
+##                print(row, col)
+##                print(oldLetter)
+                if oldLetter in ['TLS', 'DLS']:
+                    lettMult *= ['D', 'T'].index(oldLetter[0])+2
+                elif oldLetter in ['TWS', 'DWS']:
+                    wordMult *= ['D', 'T'].index(oldLetter[0])+2
+                elif oldLetter == '*':
+                    wordMult *= 2
+##                print(lettMult)
+                wordScore += self.scores[letter.lower()] * lettMult
+                if scored.get(letter):
+                    scored[letter+str(c)]=(row, col)
+                    c+=1
+                else:
+                    scored[letter]=(row,col)
+##                print(wordScore)
+            
+            wordScore *= wordMult
+##            print(wordScore)
+        if move.rwws:
+            scored = collections.OrderedDict(list(scored.items())[::-1])
+        for word in newWords:
+            if move.dnsw or not set([i for i in scored.values()]).issubset(set([i for i in word.values()])):
+##                print('aux', word)
+                auxWordScore = 0
+                auxWordMult = 1
+                for (letter, place) in word.items():
+                    #if place not in scored.values():
+##                    print('\t scoring', letter, place)
+                    lettMult = 1
+                    letter = letter[0]
+                    row, col = place
+                    oldLetter = self.board[row][col]
+                    if row>15 or col>15:
+##                        print('fa')
+                        return 0
+                    if oldLetter in ['TLS', 'DLS']:
+                        lettMult *= ['D', 'T'].index(oldLetter[0])+2
+                    elif oldLetter in ['TWS', 'DWS']:
+                        auxWordMult *= ['D', 'T'].index(oldLetter[0])+2
+##                    print(oldLetter)
+##                    print(lettMult)
+                    auxWordScore += self.scores[letter.lower()] * lettMult
+##                    print(auxWordScore)
+                auxWordScore *= auxWordMult
+##                print(auxWordScore)
+                wordScore += auxWordScore
+##                print(wordScore)
+        if len(move.word) == 7:
+            wordScore += 50 #Bingo!
+        #input()
+        return wordScore       
+class CPU():
+    def __init__(self):
+        self.board = Board()
+        
+        self.rack = []
+        self.drawTiles()
+        
+        self.checkWord = self.board.checkWord
+        self.extraList = self.board.extraList
+
+        self.score = 0
+
+        self.distribution = distribution
+
+        self.name = "CPU"
+        
+    def drawTiles(self):
+        while len(self.rack)<7 and len(func.distribution)>0:
+            letter = random.choice(func.distribution)
+            self.rack.append(letter.upper())
+            func.distribution.remove(letter)
+            
+    def gacc(self, iterable, maxDepth):
+        allWords = []
+        for depth in range(2, maxDepth + 1): 
+            for word in itertools.permutations(iterable, depth):
+                allWords.append("".join(word))
+                
+        if len(allWords)>0:
+            allWords.pop(0)
+        correctWords = []
+        for word in allWords:
+            if self.checkWord(word):
+                correctWords.append(word)
+
+        return correctWords
+    
     def displayBoard(self, board):
         
         count = 0
@@ -1432,7 +374,7 @@ class CPU(player.Player):
                         j = "  "
                     else:
                         j = "   "
-                if (j[0] in func.ascii_uppercase  or j == "*") and len(j) < 3:
+                if (j[0] in string.ascii_uppercase  or j == "*") and len(j) < 3:
                     j = " " + j[0] + " "
                 text += j
                 text += "|"
@@ -1448,551 +390,326 @@ class CPU(player.Player):
         text += "\n"
         print(text)
 
-    def slowdB(self, board):
-        count = 0
-        print("-" * 64, end="")
-        print('\n', end="")
-        print("|", end="")
-        for i in range(16):
-            line = board[i]
-            for j in line:
-                if j == " ":
-                    if i == 0:
-                        j = "  "
-                    else:
-                        j = "   "
-                if j[0] in func.ascii_uppercase and len(j) < 3:
-                    j = " " + j[0] + " "
-                print(j, end="")
-                print("|", end="")
-                count += 1
-                if count == 16 and i != 15:
-                    print("\n", end="")
-                    print("-" * 64, end="")
-                    print("\n", end="")
-                    print("|", end="")
-                    count = 0
-        print("\n", end="")
-        print("-" * 64, end="")
-        print("\n", end="")
+    def takeTurn(self):
+        prevBoard = self.rNab()
+        words = self.board.removeDuplicates(self.gacc(self.rack, len(self.rack)))
+        for i in words:
+            if len(i)==7:
+                print(i)
+        places = self.board.getPlaces(self.board.board)
+        plays = []
+        neighbors = []
 
-    def placeWord(self, word, board, place, direction, ignore=None):
-        #if not ignore is None: print(ignore)
-        start = board[int(place[0])][int(place[1])]
-        length = len(word)
-        row = int(place[0])
-        column = int(place[1])
-        score = 0
-        for num in range(0, length):
-
-            if direction == 'A':
-                try:
-                    if board[row][column] not in func.ascii_uppercase or board[row][column] == ignore: #checks if space isn't letter
-                        #print(board[row][column])
-                        if board[row][column] in self.scoreList:
-                            pass 
-                        board[row][column] = word[num]
+        if places == []:
+            for i in range(1, 15):
+                places.append((i, 8))
+                places.append((8, i))
+        across, down = [], []
+        for place in places:
+            r, c = place
+            neighbors.append((r+1,c))
+            neighbors.append((r-1,c))
+            neighbors.append((r,c+1))
+            neighbors.append((r,c-1))
+        neighbors = self.board.removeDuplicates(neighbors)
+        for word in words:
+            for neighbor in neighbors:
+                rIndex, cIndex = neighbor
+                for direc in ['A', 'D']:
+                    newBoard = self.rNab()
+                    if self.playWord(word, rIndex, cIndex, direc, newBoard):
+                        play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard)
+                        yield play
+                        continue
                         
-                        column += 1
-                    else:
-                        if board[row][column] != ignore :
-                            #print("placement error at {0}, {1}, {2}, {3}".format(ignore, row, column, direction))
-                            #self.displayBoard(board)
-                            #func.sleep(1)
-                            return False
-                        else:
-                            print("ignored {0}".format(ignore))
-                except:
-                    print(row, column, direction, word)
-                    return False
-            else:
-                try:
-                    if board[row][column] not in func.ascii_uppercase or board[row][column] == ignore:
-                        board[row][column] = word[num]
-                        row += 1
-                    else:
-                        if board[row][column] != ignore:
-                            #print("placement error at {0}, {1}, {2}, {3}".format(ignore, row, column, direction))
-                            #self.displayBoard(board)
-                            #func.sleep(1)
-                            return False
-                        else:
-                            print("ignored {0}".format(ignore))
-                except:
-                    print(row, column, direction, word)
-                    return False
-        return True
-
-    def getBoardWords(self, boardToCheck):
-        touchingList = []
-        for row in range(1, 16):
-            for column in range(1, 16):
-                attributes = self.getAttributes("%d,%d" % (row, column), boardToCheck)
-                if attributes['text'][0] != " " and attributes['text'] not in self.scoreList:
-                    touchingList.append(attributes)
-        touchingList = self.removeDuplicates(touchingList)
-        for item in touchingList:
-            if item['numTouchingLetters'] == 0:
-                return False, "Must Be Connected"
-        preservedList = []
-        for item in touchingList:
-            preservedList.append(item)
-        words = {}
-        touchingListAcross = []
-        touchingListDown = []
-        for item in touchingList:
-            touchingListAcross.append(item)
-            touchingListDown.append(item)
-        usedLetters = []
-        while touchingList:
-            wordAcross = ""
-            wordStart = touchingList[0]
-            column = wordStart['column']
-            row = wordStart['row']
-            wordLettersAcross = [wordStart]
-            wordAcross += wordStart['text'][0]
-            while wordStart['right'][0] != " " and wordStart['right'] != "NA":
-                right = wordStart['right']
-                column += 1
-                for item in touchingList:
-                    if item['text'] == right and \
-                       item['column'] == column and \
-                       item['row'] == row and \
-                       item in touchingListAcross:
-                        touchingListAcross.remove(item)
-                        wordStart = item
-                        wordAcross += wordStart['text'][0]
-                        wordLettersAcross.append(wordStart)
-                if wordStart in usedLetters:
-                    break
-                else:
-                    usedLetters.append(wordStart)
-            usedLetters = []
-            wordDown = ""
-            wordStart = touchingList[0]
-            column = wordStart['column']
-            row = wordStart['row']
-            wordLettersDown = [wordStart]
-            wordDown += wordStart['text'][0]
-            while wordStart['down'][0] != " " and wordStart['down'] != "NA":
-                down = wordStart['down']
-                row += 1
-                for item in touchingList:
-                    if item['text'] == down and \
-                       item['column'] == column and \
-                       item['row'] == row and \
-                       item in touchingListDown:
-                        touchingListDown.remove(item)
-                        wordStart = item
-                        wordDown += wordStart['text'][0]
-                        wordLettersDown.append(wordStart)
-                if wordStart in usedLetters:
-                    break
-                else:
-                    usedLetters.append(wordStart)
-            touchingList.remove(touchingList[0])
-            if len(wordAcross) > 1:
-                words[wordAcross] = wordLettersAcross
-            if len(wordDown) > 1:
-                words[wordDown] = wordLettersDown
-
-        return words
-
-    def getScore(self, moveAtts):
-        row = moveAtts["place"][0]
-        column = moveAtts["place"][1]
-        specialScores = {"TLS":[], "DLS":[], "DWS":[], "TWS":[]}
-        wordsToScore = [moveAtts["word"]]
-        for letter in range(len(moveAtts["word"])):
-            sp = self.board[row][column]
-            if sp == "TWS":
-                specialScores["TWS"] = [moveAtts["word"]]
-            elif sp == "DWS" or sp == "*":
-                specialScores["DWS"] = [moveAtts["word"]]
-            elif sp == "TLS":
-                specialScores["TLS"].append(moveAtts["word"][letter])
-            elif sp == "DLS":
-                specialScores["DLS"].append(moveAtts["word"][letter])
-            if moveAtts["direction"] == "A":
-                spAtts = self.getAttributes("%d,%d" % (row, column), moveAtts["board"])
-                if spAtts["up"] in func.ascii_uppercase:
-                    nrow = row
-                    word = spAtts["text"]
-                    while spAtts["up"] in func.ascii_uppercase:
-                        word += spAtts["up"]
-                        if nrow + 1 < 16:
-                            nrow += 1
-                            spAtts = self.getAttributes("%d,%d" % (nrow, column), moveAtts["board"])
-                        else:
-                            break
-                    if len(word) == 3:
-                        word = word[:2]
-                    wordsToScore.append(word)
-                    
-                spAtts = self.getAttributes("%d,%d" % (row, column), moveAtts["board"])
-                if spAtts["down"] in func.ascii_uppercase:
-                    nrow = row
-                    word = spAtts["text"]
-                    while spAtts["down"] in func.ascii_uppercase:
-                        word += spAtts["down"]
-                        if nrow + 1 < 16:
-                            nrow += 1
-                            spAtts = self.getAttributes("%d,%d" % (nrow, column), moveAtts["board"])
-                        else:
-                            break
-                    if len(word) == 3:
-                        word = word[:2]
-                    wordsToScore.append(word)
-                column += 1
-            else:
-                spAtts = self.getAttributes("%d,%d" % (row, column), moveAtts["board"])
-                if spAtts["right"] in func.ascii_uppercase:
-                    ncol = column
-                    word = spAtts["text"]
-                    while spAtts["right"] in func.ascii_uppercase:
-                        word += spAtts["right"]
-                        if ncol + 1 < 16:
-                            ncol += 1
-                            spAtts = self.getAttributes("%d,%d" % (row, ncol), moveAtts["board"])
-                        else:
-                            break
-                    if len(word) == 3:
-                        word = word[:2]
-                    wordsToScore.append(word)
-                    
-                spAtts = self.getAttributes("%d,%d" % (row, column), moveAtts["board"])
-                if spAtts["left"] in func.ascii_uppercase:
-                    ncol = column
-                    word = spAtts["text"]
-                    while spAtts["left"] in func.ascii_uppercase:
-                        word += spAtts["left"]
-                        if ncol + 1 < 16:
-                            ncol += 1
-                            spAtts = self.getAttributes("%d,%d" % (row, ncol), moveAtts["board"])
-                        else:
-                            break
-                    if len(word) == 3:
-                        word = word[:2]
-                    wordsToScore.append(word)
-                row += 1
-
-        wordScore = 0
-        for letter in moveAtts["word"]:
-            wordScore += self.scores[letter.lower()]
-
-        for item in specialScores.items():
-            scoreType = item[0]
-            scoreLetters = item[1]
-            if scoreType == "DLS":
-                if specialScores.get("DWS"):
-                    for i in range(2):
-                        for letter in scoreLetters:
-                            wordScore += self.scores[letter.lower()]
-                elif specialScores.get("TWS"):
-                    for i in range(3):
-                        for letter in scoreLetters:
-                            wordScore += self.scores[letter.lower()]
-                else:
-                    for letter in scoreLetters:
-                        wordScore += self.scores[letter.lower()]
-            elif scoreType == "TLS":
-                if specialScores.get("DWS"):
-                    for i in range(2):
-                        for count in range(2):
-                            for letter in scoreLetters:
-                                wordScore += self.scores[letter.lower()]
-                else:
-                    for count in range(2):
-                        for letter in scoreLetters:
-                            wordScore += self.scores[letter.lower()]
-
-        for item in specialScores.items(): #Double and Triple Word have to be evaluated last
-            scoreType = item[0]
-            scoreLetters = item[1]
-            if scoreType == "DWS":
-                try:
-                    if scoreLetters[0] == moveAtts["word"]:
-                        wordScore *= 2
-                except:
-                    pass
-            elif scoreType == "TWS":
-                try:
-                    if scoreLetters[0] == moveAtts["word"]:
-                        wordScore *= 3
-                except:
-                    pass
-
-        for word in wordsToScore:
-            if word != moveAtts["word"]:
-                for letter in word:
-                    wordScore += self.scores[letter.lower()]
-        if len(moveAtts["word"]) == 7:
-            wordScore += 50
-        moveAtts["score"] = wordScore
-        
-
-    def rNab(self):
-        nbo = []
-        for row in self.board:
-            nbo.append([])
-            for col in row:
-                nbo[-1].append(col)
-        return nbo
-    def exchange(self):
-        nar = self.gac(self.rack, 3, len(self.rack))
-        #print(len(nar))
-        vals = {}
-        for c in nar:
-            #print(c, self.ge(c))
-            vals[self.ge(c)] = c
-           # print(self.ge(c))
-        #print(vals)
-        exchs = []
-        ep = vals.copy()
-       # print("Generating exchange values...this will take about {0} seconds.".format(func.uniform(3, 7)))
-        
-        for i in range(min(len(vals), 10)):
-            ev = max(ep.keys())
-            exch = vals[ev]
-            #print(ev, exch)
-            #print(exchs)
-            exchs.append(self.gmfev((exch, ev)))#+self.lookahead(self.gmfev((exch, ev)), self.rack, self.board)[0]))
-            ep.pop(ev)
-        #self.imps()
-        ret = []
-        #self.imps()
-        for i in exchs:
-            ret.append(i)
-            #self.pm(i)
-        #print(ret)
-        return ret
-
-    def gmfev(self, exch):
-        "Get move from exchange value"
-        move = {"score":0, "word":"".join(i for i in sorted(list(exch[0]))), "valuation":exch[1],"board":self.board, "direction":" ", "place":[" ", " "], 'type':'Exchange'}
-        return move
-        self.pm(move)
-    def imps(self, *h):
-        print("  Type   Word   Score  Valuation   Direction     Row       Column     Total")
-        print("----------------------------------------------------------------------------", end="")
-        if h:
-            print("------------------------")
-        else:
-            print()
-    def pm(self, m):
-        def wijof(a):
-            q=int(a)/10
-            if q >= 1:
-                return "%2.3f" % a
-            elif q<=0:
-                if q<=-1:
-                    return "%2.2f" % a
-                elif a<0:
-                    return "%1.3f" % a
-                else:
-                    return "%1.4f" % a
-            else:
-                return "%1.4f" % a
-        print("%s %7s   %2d      %s      %s         %2s          %2s       %s" % (m["type"], m["word"], m["score"], \
-                                                                     wijof(m["valuation"]), m["direction"], \
-                                                                     str(m["place"][0]), str(m["place"][1]), \
-                                                                     wijof(m["score"] + m["valuation"])))
-    def commit_exch(self, exch):
-        if type(exch) == type({}):
-            exch = exch["word"]
-        #print(exch)
-        nar = self.rack[:]
-        for i in exch:
-            #print(i, end="EXCH")
-            #print(nar)
-            nar.remove(i)
-        self.rack = nar[:]
-        self.drawTiles()
-    def distances(self, row_num, col_num, direc):
-        #print(self.board, row_num, col_num)
-        if self.board[-1] == []:
-            self.board.pop(-1)
-        #print(self.board, row_num, col_num)
-        letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        if not str(col_num).isdigit():
-            col_num = ord(col_num.upper()) - ord('A') + 1
-        col = [row[col_num] for row in self.board]
-        row = self.board[row_num]
-        rightDepth = next((i for i, c in enumerate(row[col_num+1:]) if c in letters), 15-col_num)
-        leftDepth = next((i for i, c in enumerate(row[col_num-1:0:-1]) if c in letters), col_num-1)
-        downDepth = next((i for i, c in enumerate(col[row_num+1:]) if c in letters), 15-row_num)
-        upDepth = next((i for i, c in enumerate(col[row_num-1:0:-1]) if c in letters), row_num-1)
-
-        if direc is None:
-            if leftDepth == 0 or rightDepth == 0:
-                return upDepth + downDepth
-            elif upDepth == 0 or downDepth == 0:
-                return leftDepth + rightDepth
-        else:
-            if direc == "A":
-                return rightDepth
-            elif direc=="D":
-                return downDepth
-            elif direc == "A1":
-                return leftDepth + rightDepth
-            elif direc == "D1":
-                return upDepth + downDepth
-            elif direc=="L":
-                return leftDepth
-            elif direc=="U":
-                return upDepth
-##        return {
-##                'right': next((i for i, c in enumerate(row[col_num+1:]) if c in letters), 15-col_num),
-##                'left': next((i for i, c in enumerate(row[col_num-1:0:-1]) if c in letters), col_num-1),
-##                'down': next((i for i, c in enumerate(col[row_num+1:]) if c in letters), 15-row_num),
-##                'up': next((i for i, c in enumerate(col[row_num-1:0:-1]) if c in letters), row_num-1)
-##        }  
-    def getDepth(self, attributes, direc=None):
-        upDepth = 0
-        downDepth = 0
-        leftDepth = 0
-        rightDepth = 0
-        #print(attributes, direc)
-        if attributes["up"] in self.extraList:
-            row = attributes["row"]
-            column = attributes["column"]
-            newLetter = self.getAttributes("%d,%d" % (column, row-1)[::-1], self.board)
-            while newLetter["up"] in self.extraList:
-                upDepth += 1
-                row = newLetter["row"]
-                column = newLetter["column"]
-                newLetter = self.getAttributes("%d,%d" % (column, row-1)[::-1], self.board)
-                
-        if attributes["down"] in self.extraList:
-            row = attributes["row"]
-            column = attributes["column"]
-            newLetter = self.getAttributes("%d,%d" % (column, row+1)[::-1], self.board)
-            while newLetter["down"] in self.extraList:
-                downDepth += 1
-                row = newLetter["row"]
-                column = newLetter["column"]
-                newLetter = self.getAttributes("%d,%d" % (column, row+1)[::-1], self.board)
-                
-        if attributes["left"] in self.extraList:
-            row = attributes["row"]
-            column = attributes["column"]
-            newLetter = self.getAttributes("%d,%d" % (column-1, row)[::-1], self.board)
-            while newLetter["left"] in self.extraList:
-                leftDepth += 1
-                row = newLetter["row"]
-                column = newLetter["column"]
-                newLetter = self.getAttributes("%d,%d" % (column-1, row)[::-1], self.board)
-                
-        if attributes["right"] in self.extraList:
-            row = attributes["row"]
-            column = attributes["column"]
-            newLetter = self.getAttributes("%d,%d" % (row, column+1), self.board)
-            while newLetter["right"] in self.extraList:
-                rightDepth += 1
-                row = newLetter["row"]
-                column = newLetter["column"]
-                newLetter = self.getAttributes("%d,%d" % (row, column+1), self.board)
-        if direc is None:
-            if leftDepth == 0 or rightDepth == 0:
-                return upDepth + downDepth
-            elif upDepth == 0 or downDepth == 0:
-                return leftDepth + rightDepth
-        else:
-            if direc == "A":
-                return rightDepth
-            elif direc=="D":
-                return downDepth
-            elif direc == "A1":
-                return leftDepth + rightDepth
-            else:
-                return upDepth + downDepth
+                    newBoard = self.rNab()
+                    if self.playWordOpp(word, rIndex, cIndex, direc, newBoard):
+                        play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, revWordWhenScoring=False)
+                        yield play
+                        
+        for (d, row) in enumerate(self.board.board[1:]):
+            yield from self.complete(self.slotify(row[1:]), 'A', d+1)
             
-    def initProxy(self, rack, board):
-        return Proxy(rack, board, self.pd[:], self.score, self.ospd, self.rv, self.isFirstTurn)
-    
-    def execProxy(self, rack, board):
-        p_X = self.initProxy(rack, board)
-        move = p_X.takeTurn()
-        return move
-    
-    def _pxDraw(self, rack):
-        while len(rack) < 7 and len(self.pd)>0:
-            letterChosen = func.choice(self.pd)
-            self.pd.remove(letterChosen)
-            rack.append(letterChosen.upper())
-        #print(rack)
-        return rack
+        columns = [[row[i] for row in self.board.board[1:]] for i in range(len(self.board.board))]
+        for (d, col) in enumerate(columns):
+            yield from self.complete(self.slotify(col), 'D', d)
 
-    def pdset(self):
-        if self.distribution:
-            self.pd = self.distribution[:]
+    def proxyBoard(self):
+        return Board(copy.deepcopy(self.board.board))
+
+    def playWord(self, word, row, col, direc, board):
+        for letter in reversed(word):
+            if row>15 or col>15:
+                return False
+            if board.board[row][col] in string.ascii_uppercase:
+                return False
+            board.board[row][col] = letter
+            if direc=='A':
+                col -= 1
+            else:
+                row -= 1
+        if board.checkBoard(board.board):
+            return True
+        return False
+
+    def playWordOpp(self, word, row, col, direc, board, skip=False):
+        i = 0
+        #for letter in word:
+        while i < len(word):
+            if row>15 or col>15:
+                return False
+            if board.board[row][col] in string.ascii_uppercase:
+                if skip:
+                    i -= 1
+                else:
+                    return False
+            else:
+                board.board[row][col] = word[i]
+            if direc=='A':
+                col += 1
+            else:
+                row += 1
+            i += 1
+        if board.checkBoard(board.board):
+            return True
+        return False
+    
+    def rNab(self):
+        return Board([[col[:] for col in row] for row in self.board.board])
+
+    def gac(self, iterable, maxDepth):
+        allWords = []
+        for depth in range(1, maxDepth + 1): 
+            for word in itertools.permutations(iterable, depth):
+                allWords.append("".join(word))
+        return allWords
+    
+    def place(self, slot, pos, word, direc, depth):
+        slot, reps = slot
+        currPos = pos
+        newSlot = list(slot)
+
+        index = 0
+        w=False
+        while index < len(word):
+            newPos = currPos + index
+            if newPos>=len(newSlot):
+                return False
+            if newSlot[newPos] != '.':
+                currPos += 1
+                index -= 1
+            else:
+                newSlot[newPos] = word[index]
+                if not w:
+                    wordPos = currPos+index
+                    w=True
+            index += 1
+        if w:
+            wordPos += 1
         else:
-            self.pd = func.distribution[:]
-    def lookahead(self, move, rack, board):
-        oPPm = None
+            return False
+        #print(wordPos == slot.index(slot.strip('.')[0]))
+        newSlot = ''.join(letter for letter in newSlot)
+
+        if not all(self.checkWord(i) for i in newSlot.strip('.').split('.') if i != ''):
+            return False
+
+        newBoardSlot = []
+        for (index, newLetter) in enumerate(newSlot):
+            if newLetter == '.':
+                newBoardSlot.append(reps[index])
+            else:
+                newBoardSlot.append(newLetter)
+        newBoard = self.rNab()
+        oldBoard = self.rNab()
+        row, col = depth, depth
+        if direc == 'A':
+            newBoardSlot.insert(0, str(depth).zfill(2))
+            newBoard.board[depth] = newBoardSlot[:]
+            col = wordPos
+        else:
+            for (index, row) in enumerate(newBoard.board[1:]):
+                row[depth] = newBoardSlot[index]
+
+            row = wordPos
+        move = Move(word, newBoard, row, col, direc, oldBoard, doNotScoreWord=True)
+        if move.board.checkBoard(move.board.board):
+            return move
+        return False
         
-        while oPPm is None:
-            self.pdset()
-            oPPm = self.execProxy([], move["board"]) #other Player Proxy move
-        sPm = None
-        nAr = self.rack[:] #non-Aliased rack
-        for i in move["word"]:
-            nAr.remove(i)
-        newRack = self._pxDraw(nAr)
-        while sPm is None:
-            self.pdset()
-            sPm = self.execProxy(newRack, oPPm["board"]) #self Proxy move
-        oPt = round(oPPm["score"] + oPPm["valuation"], 2)
-        sPt = round(sPm["score"] + sPm["valuation"], 2)
-        winning = self.score + sPm["score"] > self.otherPlayer.score + oPPm["score"] #crude win evaluation calculation
-        #print(move)
-        print("\nSample Proxy move at %s" % player.tiles.genidstr(oPPm))
-        print()
-        print("                        ", end="") 
-        self.imps(True)
-        print("Original Play:          ", end="")
-        self.pm(move)
-        print("Random Opponent's Play: ", end="")
-        self.pm(oPPm)
-        print("CPU's Response:         ", end="")
-        self.pm(sPm)
-##        print("Final scoring: {0} + {1} + ({2} - {3}) = {4}".format(move["score"], move["valuation"], \
-##                                                              sPt, oPt, round(move["score"] + move["valuation"] + (sPt-oPt),2)))
-        print("End\n\n")
-        return move["score"] + move["valuation"] + (sPt-oPt), winning
-#c = CPU(func.root, [], func.distribution)
-#c.rack = ["A", "G", "C", "P", "E", "N", "?"]
-#print(c.getAllCorrectCombinations(c.rack, 7))
+    def complete(self, slot, direc, depth):
+        if depth==0:
+            return []
+        words = self.board.removeDuplicates(self.gac(self.rack, 7))
+        newSlots = []
+        slotForLen = slot[0]
+        if slotForLen != '...............':
+            edgeFinder = [i[0] for i in enumerate(slotForLen) if i[1] !='.']
+            for word in words:
+                for pos in range(edgeFinder[0], edgeFinder[-1]+len(word)+2):
+                    if pos-len(word) in range(len(slotForLen)):
+                        if slotForLen[pos-len(word)] == '.':
+                            yield self.place(slot, pos-len(word), word, direc, depth)
+
+        #return newSlots
+
+    def slotify(self, slot):
+        slotForReps = slot
+        slot = ''.join(i for i in slot)
+        slot = slot.replace(' ', '.')
+        for i in self.extraList:
+            slot = slot.replace(i, '.')
+        #print(slot)
+        return slot, slotForReps
+
+    def skips(self, move):
+        sk=[]
+        r, c = move.row, move.col
+        i=0
+        while move.board.board[r][c] not in self.extraList:
+            if move.board.board[r][c] == move.prevBoard.board[r][c]:
+                sk.append({move.board.board[r][c]: i})
+            else:
+                i += 1
+            if not move.rwws:
+                im = 1
+            else:
+                im = -1
+
+            if move.direction == 'D':
+                r -= im
+            else:
+                c -= im
+
+            if r > 15 or c > 15:
+                if move.rwws:
+                    return reversed(sk)
+                return sk
+        if move.rwws:
+            return reversed(sk)
+        return sk
+
+    def exchange(self):
+        if len(distribution)<7:
+            return []
+        exchs = self.gac(self.rack, len(self.rack))
+        for i in exchs:
+            exch = Move(i, self.board, 0, 0, 0, self.board)
+            exch.score = 0
+            exch.getEvaluation(self.rack)
+            yield exch
+
+    def _run(self):
+        self.displayBoard(self.board.board)
+        print(self.rack)
+        d=self.takeTurn()
+        b = Move(0, 0, 0, 0, 0, 0)
+        b.score, b.valuation = 0, 0
+        t='p'
+        for i in d:
+            if i:
+                i.getScore()
+                i.getEvaluation(self.rack)
+                if i.score+i.valuation>b.score+b.valuation:
+                    b=i
+        for i in self.exchange():
+            if i.valuation > b.score+b.valuation:
+                b=i
+                t='e'
+        if b.board == 0:
+            print('I must pass...')
+            return False
+        if t != 'e':
+            self.displayBoard(b.board.board)
+            wordWithSkips = list(b.word)
+            for i in self.skips(b):
+                for k,v in i.items():
+                    wordWithSkips.insert(v, '({})'.format(k))
+
+            s = ''.join(i for i in wordWithSkips).replace(')(', '')
+            print(s)
+            print(b.row, b.col)
+            print(b.score, b.valuation)
+            
+            self.board = b.board
+            self.score += b.score
+        else:
+            print('Exchanging: {}\nValuation: {}'.format(b.word, b.valuation))
+        for i in b.word:
+            try:
+                self.rack.remove(i)
+            except:
+                pass
+        self.drawTiles()
+        return b
+
+class BoardTile():
+    def __init__(self, root, x, y, board):
+        self.root, self.x, self.y = root, x, y
+        self.text = board[x][y]
+
+        self.label = tk.Label(root, text=self.text, width=3, height=1, relief=tk.RAISED)
+        self.label.place_configure(x=y*35, y=x*22)
+
+        self.e = tk.Entry(self.label, width=3)
+        self.e.delete(0, tk.END)
+        self.e.insert(0, self.text)
+        self.e.pack()
+        
+class RackTile():
+    def __init__(self, root, x, y):
+        self.root, self.x, self.y = root, x, y
+        self.letters = list(string.ascii_uppercase)
+        self.letters.append('')
+        self.text = ''
+        self.label = tk.Label(root, text=self.text, width=3, height=1, relief=tk.RAISED)
+        self.label.place_configure(x=x*35, y=y)
+        self.e = tk.Entry(self.label, width=3)
+        self.e.pack()
+        
+class BoardGUI():
+    def __init__(self, board=None):
+        if board is None:
+            self.board = regBoard
+        else:
+            self.board = board
+        
+        self.root = tk.Tk()
+        self.tiles = []
+        for x_ in range(len(self.board)):
+            self.tiles.append([])
+            for y_ in range(len(self.board[x_])):
+                self.tiles[-1].append(BoardTile(self.root, x_, y_, self.board))
+        self.enterButton = tk.Button(self.root, text="Solve!", command=self.solve)
+        self.enterButton.place_configure(x=600, y=0)
+
+        self.rackTiles = []
+        for x in range(0, 7, 1):
+            self.rackTiles.append(RackTile(self.root, x, 400))
+                                  
+    def solve(self):
+        board = [[i.e.get() for i in row] for row in self.tiles]
+        rack = [i.e.get() for i in self.rackTiles]
+
+        c = CPU()
+        c.displayBoard(board)
+        
+        c.board = Board(board)
+        c.rack = rack
+        nb = c._run().board.board
+        self.root.destroy()
+        b = BoardGUI(nb)
+        
+#b = BoardGUI()
+def fight():
+    c = CPU()
+    c2 = CPU()
+    while (c.rack and c2.rack) or distribution:
+        c._run()
+        c2.board = c.board
+        c2._run()
+        c.board = c2.board
+        print(c.score, c2.score)
+
 if __name__ == "__main__":
-    p = player.Player(func.root, 1, "ProxyStandInObject", 0, 0, 'n', 'n', [], func.distribution, True)
-    c = CPU(func.root, [], (), p)
-    #c.displayBoard(c.board)
- #   c.drawTiles()
-    #print(c.getBoardWords(c.board))
-    #print(c.rack)
-    #c.getThroughWords(c.board, 8, 8, "D")
-    #c.testThrough()
-    #c.displayBoard(c.board)
-    #print(c.getDepth(c.getAttributes("8,1", c.board), "D"))
-    #c.rackonv()
- #   c.slowdB(c.board)
-    c.displayBoard(c.board)
-    while len(func.distribution)>0:
-        c.takeTurn()
-        c.drawTiles()
-        func.sleep(1)
-        clr('clear')
-        #print("\n"*30)
-    #W*)&f$PB^MXa.Gg1A_7vES]~
-    #print(c.distribution)
-    #print(func.distribution)
-    #c.exchange()
-##    c.rackonv()
-##    for i in range(5):
-##        c.exchange()
-##        c.rackonv()
-##        bingos = []
-##        for i in c.gacc(c.rack, 7):
-##            if len(i)==7 and i not in bingos:
-##                bingos.append(i)
-##        print(bingos)
+    fight()
