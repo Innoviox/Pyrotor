@@ -14,13 +14,14 @@ class Game():
          self.mode1 = mode1[0]
          self.mode2 = mode2[0]
 
-         self.gameNum = -1
+         self.gameNum = len(open("savedGame.txt").read().split("New Game"))
+         print(self.gameNum)
          self.gameAlreadyInFile = False
          
     def startGame(self):
         self.player1 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, [], (), False)
         if self.name2 == "CPU":
-            self.player2 = cpu.CPU(self.root2, [], self.player1)
+            self.player2 = cpu.CPU()#self.root2, [], self.player1
             self.player1.cpuIn = True
         else:
             self.player2 = player.Player(self.root2, 2, self.name2, 150, 550, self.mode1, self.mode2, [], (), False)
@@ -38,7 +39,7 @@ class Game():
         else:
             if self.player2.name == "CPU":
                 self.playerGoing = 1
-                self.player2.takeTurn()
+                self.player2._run()
                 self.player2.turnrotation = 0
                 self.player1.board = self.player2.board
             else:
@@ -86,7 +87,7 @@ class GameWithCPU(Game):
         
     def startGame(self):
         self.player1 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, [], (), True)
-        self.player2= cpu.CPU(self.root, [], (), self.player1)
+        self.player2= cpu.CPU()
         self.player1.otherName = self.name2
         self.player2.otherName = self.name1
         self.playerGoing = 1
@@ -96,19 +97,19 @@ class GameWithCPU(Game):
             self.root1 = func.Toplevel(self.mainRoot)
             self.player1.reRoot(self.root1)
             self.player1.startTurn(self.player2.name, self.player2.score)
-            self.player2.board = self.player1.board
+            self.player2.board = cpu.Board(self.player1.board)
             self.playerGoing = 2
             #func.popup(self.mainRoot, "Pass Device", "Pass Device to %s\n\n" % self.player2.name, 500, 500)
         else:
             self.playerGoing = 1
-            self.player2.takeTurn()
+            self.player2._run()
             self.player2.turnrotation = 0
-            self.player1.board = self.player2.board
-        if self.gameAlreadyInFile is False:
-            writeGameToFile(self, gameNum = self.gameNum, gameAlreadyInFile = False)
-            self.gameAlreadyInFile = True
-        else:
-            writeGameToFile(self, gameNum = self.gameNum, gameAlreadyInFile = True)
+            self.player1.board = self.player2.board.board
+##        if self.gameAlreadyInFile is False:
+##            writeGameToFile(self, gameNum = self.gameNum, gameAlreadyInFile = False)
+##            self.gameAlreadyInFile = True
+##        else:
+##            writeGameToFile(self, gameNum = self.gameNum, gameAlreadyInFile = True)
         print(len(func.distribution))
     def main(self):
         #self.startGame()
@@ -422,6 +423,7 @@ def writeGameToFile(game, gameNum = -1, gameAlreadyInFile = False, file="savedGa
                 text += "|"
             text += "\n"
         #print(fileText, gameNum)
+        fileText.append([])
         fileText[gameNum] = text
         setFileTextToList(fileText)
 if __name__ == "__main__":

@@ -380,7 +380,7 @@ class Player():
             movable.words = []
             movable.wordIndexes = {}
         words = self.getBoardWords(boardToCheck)
-        if type(words) == type({}):
+        if isinstance(words, dict):
             for (word, attributes) in words.items():
                 for attribute in attributes:
                     for movable in self.movables:

@@ -34,7 +34,7 @@ def instructions():
     "?" tiles are blank tiles. They can be played as any letter.
 
     If you can't find any words to make, you can exchange. Exchanging 
-    You get a certain amount of points based on the letters you played.
+   You get a certain amount of points based on the letters you played.
     Special Score Tiles:
     \tTWS (triple word score): Multiplies your score for that turn by 3.
     \tDWS (double word score): Multiplies your score for that turn by 2.
@@ -194,9 +194,9 @@ def setup():
     exitButton = func.Button(func.root, text = "Exit", command = exitGame)
 
     welcomeLabel.place(x = 40, y = 0)
-    instructionsButton.place(x = 90, y = 50)
+    #instructionsButton.place(x = 90, y = 50)
     playButton.place(x = 110, y = 100)
-    playSavedButton.place(x = 76, y = 150)
+    #playSavedButton.place(x = 76, y = 150)
     exitButton.place(x = 112, y = 200)
 
     
