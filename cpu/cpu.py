@@ -253,13 +253,13 @@ class CPU():
                 index -= 1
             else:
                 slot[newPos] = word[index]
-                if wordPos:
+                if not wordPos:
                     wordPos = currPos+index
             index += 1
         wordPos += 1
         slot = ''.join(slot)
 
-        if not all(self.checkWord(i) for i in slot.strip('.').split('.')):
+        if not all(map(self.checkWord, slot.strip('.').split('.'))):
             return False
 
         newBoardSlot = [reps[index] if newLetter == '.' else newLetter for (index, newLetter) in enumerate(slot)]
