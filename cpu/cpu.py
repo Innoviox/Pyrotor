@@ -71,11 +71,10 @@ def call(func):
 
 
 
-from .blueprint import*
+from .blueprint import *
 from utils import *
 
 class CPU():
-    @call
     def __init__(self, strategy=BlueprintBase):
         self.board = Board()
         
@@ -91,21 +90,17 @@ class CPU():
         self.BlueprintCreator = strategy
         
         self.name = "CPU"
-    @call
+
     def drawTiles(self):
-        print('drawing tiles!')
         while len(self.rack)<7 and len(self.distribution)>0:
             letter = random.choice(self.distribution)
             self.rack.append(letter.upper())
             self.distribution.remove(letter)
     
-    @call                
     def gacc(self, iterable, maxDepth):
-        s = []
         for word in self.gac(iterable, maxDepth):
             if self.checkWord(word):
-                s.append(word)
-        return s
+                yield word
     
     def displayBoard(self, board):
         
@@ -138,7 +133,7 @@ class CPU():
         print(text)
 
     def generate(self):
-        t1=time.time()
+#        t1=time.time()
         prevBoard = self.rNab()
         words = self.board.removeDuplicates(self.gacc(self.rack, len(self.rack)))
         places = self.board.getPlaces(self.board.board)
@@ -164,25 +159,35 @@ class CPU():
                     newBoard = self.rNab()
                     if self.playWord(word, rIndex, cIndex, direc, newBoard):
                         play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, self.rack)
-                        yield play
+#                        yield play
+                        plays.append(play)
                         continue
                         
                     newBoard = self.rNab()
                     if self.playWordOpp(word, rIndex, cIndex, direc, newBoard):
                         play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, self.rack, revWordWhenScoring=False)
-                        yield play
-        print(time.time()-t1, "1")
+                        plays.append(play)
+#                        yield play
+#        print(time.time()-t1, "1")
 
-        t2=time.time()
+#        t2=time.time()
+
+        words = self.board.removeDuplicates(self.gac(self.rack, 7))
         for (d, row) in enumerate(self.board.board[1:]):
-            yield from self.complete(self.slotify(row[1:]), 'A', d+1)
+#            yield from self.complete(self.slotify(row[1:]), 'A', d+1, words)
+            for play in self.complete(self.slotify(row[1:]), 'A', d+1, words):
+                plays.append(play)
+
             
         for (d, col) in enumerate([[row[i] for row in self.board.board[1:]] for i in range(len(self.board.board))]):
-            yield from self.complete(self.slotify(col), 'D', d)
-        a=time.time()-t1
-        b=time.time()-t2
-        print(b, "2")
-        print(a, "total")
+#            yield from self.complete(self.slotify(col), 'D', d, words)
+            for play in self.complete(self.slotify(col), 'D', d, words):
+                plays.append(play)
+##        a=time.time()-t1
+##        b=time.time()-t2
+##        print(b, "2")
+##        print(a, "total")
+        return plays
 
 
     def proxyBoard(self):
@@ -226,14 +231,12 @@ class CPU():
         return False
     
     def rNab(self):
-        return Board([[col[:] for col in row] for row in self.board.board])
+        return Board([[col for col in row] for row in self.board.board])
 
     def gac(self, iterable, maxDepth):
-        allWords = []
         for depth in range(1, maxDepth + 1): 
             for word in itertools.permutations(iterable, depth):
-                allWords.append("".join(word))
-        return allWords
+                yield ''.join(word)
     
     def place(self, slot, pos, word, direc, depth):
         slot, reps = slot
@@ -260,11 +263,9 @@ class CPU():
             return False
 
         newBoardSlot = [reps[index] if newLetter == '.' else newLetter for (index, newLetter) in enumerate(slot)]
-
         newBoard = self.rNab()
         if direc == 'A':
-            newBoardSlot.insert(0, str(depth).zfill(2))
-            newBoard.board[depth] = newBoardSlot[:]
+            newBoard.board[depth][1:] = newBoardSlot[:]
             col = wordPos
             row = depth
         else:
@@ -273,14 +274,15 @@ class CPU():
             col = depth
             row = wordPos
         move = Move(word, newBoard, row, col, direc, self.rNab(), self.rack, doNotScoreWord=True)
-        if move.board.checkBoard(move.board.board):
+        if move.board.checkBoard(newBoard.board):
+            move.getScore()
+            move.getEvaluation(move.rack)
             return move
         return False
         
-    def complete(self, slot, direc, depth):
+    def complete(self, slot, direc, depth, words):
         if depth==0:
             return []
-        words = self.board.removeDuplicates(self.gac(self.rack, 7))
         newSlots = []
         slotForLen = slot[0]
         if slotForLen != '...............':
@@ -314,9 +316,6 @@ class CPU():
             yield exch
 
     def _run(self):
-        
-        print(self.rack)
-
         strategy = self.BlueprintCreator(self.generate(), self.rack)
         b = strategy.pick()
         t='p'

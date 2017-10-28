@@ -5,15 +5,6 @@ import time
 import random
 import timeit
 
-import os
-
-f = []
-for (dirpath, dirnames, filenames) in os.walk('.'):
-    f.extend(filenames)
-    break
-
-print(os.getcwd())
-print(f)
 leaves = open("resources/leaves.txt").read().split()
 leavesDict = {leaves[i]:float(leaves[i+1]) for i in range(0, len(leaves), 2)}
 leavesDict[''] = 0
@@ -94,10 +85,7 @@ class Move():
         self.dnsw = doNotScoreWord
         self.rwws = revWordWhenScoring
         self.rack = rack
-        #if not self.dnsw:
-        self.getScore()
-        #if evaluate:
-        self.getEvaluation(rack)
+
         
     def comp(self, other):
         return self.score+self.valuation>other.score+other.valuation

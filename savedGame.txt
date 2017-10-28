@@ -1,21 +1,21 @@
 New Game
-Joe 65
-CPU 149
-a,a,a,a,a,a,a,a,a,b,b,c,d,d,d,e,e,e,e,e,e,e,e,e,e,e,e,f,f,g,g,i,i,i,i,i,i,i,i,j,k,l,l,l,m,n,n,n,n,n,o,o,o,o,o,o,q,r,r,r,r,r,r,s,s,s,t,t,t,t,u,u,u,u,v,v,w,w,x,y,y,
+Joe 8
+CPU 0
+a,a,a,a,a,a,a,a,b,b,c,c,d,d,d,d,e,e,e,e,e,e,e,e,e,e,e,e,f,g,g,g,h,h,i,i,i,i,i,i,i,i,i,j,k,l,l,l,l,m,m,n,n,n,n,n,o,o,o,o,o,o,o,p,q,r,r,r,r,r,s,s,s,t,t,t,t,t,t,u,u,u,v,v,w,w,x,y,z,
 n n 1
-LOSPNCM
-XAIENOU
+OSNYRFU
+ITFNEWH
  |A |B |C |D |E |F |G |H |I |J |K |L |M |N |O |
-01|TWS| | |DLS| | | |TWS| | | |G| | |TWS|
-02| |DWS| | | |TLS| | | |TLS|H|A|T|DWS| |
-03| | |DWS| | | |DLS| |DLS| | |L|DWS| | |
-04|DLS| | |DWS| | | |DLS| | |H|E|R| |DLS|
-05| | | | |DWS| | | | | |O|D|E| | |
-06| |TLS| | | |TLS| | |J|O|G| |S|TLS| |
-07| | |DLS| | | |DLS|P|O|D| | |C| | |
-08|TWS| | |DLS| | |Z|I|T|I| |DLS|I| |TWS|
-09| | |DLS| | | |DLS| |DLS|C| | |N| | |
-10| |TLS| | | |TLS| | | |TLS| | |D|TLS| |
+01|TWS| | |DLS| | | |TWS| | | |DLS| | |TWS|
+02| |DWS| | | |TLS| | | |TLS| | | |DWS| |
+03| | |DWS| | | |DLS| |DLS| | | |DWS| | |
+04|DLS| | |DWS| | | |DLS| | | |DWS| | |DLS|
+05| | | | |DWS| | | | | |DWS| | | | |
+06| |TLS| | | |TLS| | | |TLS| | | |TLS| |
+07| | |DLS| | | |DLS| |DLS| | | |DLS| | |
+08|TWS| | |DLS| | |P|A| | | |DLS| | |TWS|
+09| | |DLS| | | |DLS| |DLS| | | |DLS| | |
+10| |TLS| | | |TLS| | | |TLS| | | |TLS| |
 11| | | | |DWS| | | | | |DWS| | | | |
 12|DLS| | |DWS| | | |DLS| | | |DWS| | |DLS|
 13| | |DWS| | | |DLS| |DLS| | | |DWS| | |

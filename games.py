@@ -21,14 +21,14 @@ class Game():
          
     def startGame(self):
         self.board = Board()
-        self.player1 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, [], (), False)
+        self.player2 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, [], (), False)
         if self.name2 == "CPU":
-            self.player2 = cpu.CPU()#self.root2, [], self.player1
-            self.player1.cpuIn = True
+            self.player1 = cpu.CPU()#self.root2, [], self.player1
+            self.player2.cpuIn = True
         else:
-            self.player2 = player.Player(self.root2, 2, self.name2, 150, 550, self.mode1, self.mode2, [], (), False)
-        self.player1.otherName = self.name2
-        self.player2.otherName = self.name1
+            self.player1 = player.Player(self.root2, 2, self.name2, 150, 550, self.mode1, self.mode2, [], (), False)
+        self.player2.otherName = self.name2
+        self.player1.otherName = self.name1
         self.playerGoing = 1
     def doTurn(self):
         if self.playerGoing == 1:
