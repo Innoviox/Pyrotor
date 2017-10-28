@@ -71,8 +71,8 @@ def call(func):
 
 
 
-from .utils import *
-from .blueprint import *
+from .blueprint import*
+from utils import *
 
 class CPU():
     @call
@@ -101,13 +101,10 @@ class CPU():
     
     @call                
     def gacc(self, iterable, maxDepth):
-        print("A1")
         s = []
         for word in self.gac(iterable, maxDepth):
             if self.checkWord(word):
-                #print("HI")
                 s.append(word)
-        print(len(s))
         return s
     
     def displayBoard(self, board):
@@ -141,9 +138,8 @@ class CPU():
         print(text)
 
     def generate(self):
+        t1=time.time()
         prevBoard = self.rNab()
-        print(self.rack, len(self.rack), len(self.gac(self.rack, len(self.rack))))
-        print(self.gacc(self.rack, len(self.rack)))
         words = self.board.removeDuplicates(self.gacc(self.rack, len(self.rack)))
         places = self.board.getPlaces(self.board.board)
         plays = []
@@ -175,12 +171,18 @@ class CPU():
                     if self.playWordOpp(word, rIndex, cIndex, direc, newBoard):
                         play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, self.rack, revWordWhenScoring=False)
                         yield play
-                        
+        print(time.time()-t1, "1")
+
+        t2=time.time()
         for (d, row) in enumerate(self.board.board[1:]):
             yield from self.complete(self.slotify(row[1:]), 'A', d+1)
             
         for (d, col) in enumerate([[row[i] for row in self.board.board[1:]] for i in range(len(self.board.board))]):
             yield from self.complete(self.slotify(col), 'D', d)
+        a=time.time()-t1
+        b=time.time()-t2
+        print(b, "2")
+        print(a, "total")
 
 
     def proxyBoard(self):

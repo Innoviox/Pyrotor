@@ -1,5 +1,7 @@
 import functions as func
 import sys
+from utils import *
+
 def genstr():
     s = ""
     for i in list((func.choice(func.printable[:-6]) for i in range(func.randint(5, 10)))):
@@ -11,93 +13,15 @@ def genidstr(obj):
     idq = id(obj)
     for i in str(idq):
         s += func.printable[10:-6][(int(i)+func.randint(15, 450)) % 65]
-    return s
-try:
-    import apoji
-    from matplotlib.mathtext import math_to_image, MathTextParser
-    from matplotlib.font_manager import FontProperties
-    from io import BytesIO
-    from PIL import ImageTk, Image
-    from tkinter import PhotoImage
-    #from matplotlib.mathtext import MathTextParser
-    from matplotlib.image import imsave
 
-    class Subscript():#tk.Frame):
-        def __init__(self, root, letter, x, y, board=False):
-            #tk.Frame.__init__(self, frame)
-            #self.pack()
-            self.scores = {'r': '1', 'v': '4', 'e': '1', 'h': '4', 'u': '1', 'y': '4', '?': '0', 'k': '5', 'f': '4', 'a': '1', 's': '1', 'i': '1   ', 'o': '1', 'm': '3', 't': '1', 'z': '10', 'x': '8', 'q': '10', 'n': '1', 'l': '1', 'w': '4', 'd': '2', 'g': '2', 'b': '3', 'p': '3', 'c': '3', 'j': '8'}
-            
-            self.frame = func.Frame(root, width=29, height=29, bd=1, relief=func.SUNKEN)
-            self.frame.place_configure(x=x, y=y)
-            self.letter = letter
-            #self.root = root
-            #print(x, y)
-            self.x_pos = x
-            self.y_pos = y
-            self.board = board
-            self.createN(letter.upper())
-            #print(letter)
-
-
-        def createN(self, letter):
-            font = FontProperties()
-            font.set_family('sans-serif')
-            parser =  MathTextParser('bitmap')
-            data, someint = parser.parse(r'%s$_{%s}$' % (letter, self.scores[letter.lower()]), dpi=130)
-            if self.board:
-                cap='gist_gray_r'
-            else:
-                cap='gnuplot_r'
-            imsave("resources/%s.png" % letter,data.as_array(),cmap=cap)
-            img = ImageTk.PhotoImage(master = self.frame, file="resources/%s.png" % letter, width=29, height=29)
-            #print(self.frame)
-            #self.frame.pack()
-            self.label = func.Label(self.frame, image=img, relief=func.RAISED)#, width=31, height=31)
-            self.label.image = img
-            #print(self.x_pos, self.y_pos)
-            #self.label.place_configure(x=self.x_pos, y=self.y_pos, width=31, height=31)
-            self.label.pack()
-            
-        def createWidgets(self, letter):
-            buffer = BytesIO()
-            math_to_image(r'$%s_%d$' % (letter, self.scores[letter.lower()]), buffer, dpi=100, format='png')
-            buffer.seek(0)
-            pimage= Image.open(buffer)
-            imag = ImageTk.PhotoImage(pimage)
-            self.label = func.Label(self.frame,image=imag)
-            self.label.image = imag
-            self.label.pack()#side="bottom")
-    mpl_in = 1
-    _w, _h, _d = 31, 31, 0
-except ImportError:
-
-    #print("matplotlib at %s not found" % genstr(), file = sys.stderr)
-    #print("PIL at %s not found" % genstr(), file=sys.stderr)
-    #print("io at %s not found" % genstr(), file=sys.stderr)
-    mpl_in = 0
-    _w, _h, _d = 31, 31, 0
+mpl_in = 0
+_w, _h, _d = 31, 31, 0
 #q = open("unicode_data.txt", encoding="utf-8")
 #print(q.read().split())
 class MovingLetter():
     """Base tile class. 31x31 frame, moves with mouse. Main graphics of the entire game; can create board."""
     def __init__(self, root, text, x, y, frame):
-        self.board = [[" ", "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K ", "L ", "M ", "N ", "O "],
-        ['01', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', 'TWS', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS'],
-        ['02', ' ', 'DWS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'DWS', ' '],
-        ['03', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' '],
-        ['04', 'DLS', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' ', 'DLS'],
-        ['05', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' '],
-        ['06', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' '],
-        ['07', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', ' '],
-        ['08', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', '*', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS'],
-        ['09', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DLS', ' ', ' '],
-        ['10', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', 'TLS', ' '],
-        ['11', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' ', ' ', 'DWS', ' ', ' ', ' ', ' '],
-        ['12', 'DLS', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' ', 'DLS'],
-        ['13', ' ', ' ', 'DWS', ' ', ' ', ' ', 'DLS', ' ', 'DLS', ' ', ' ', ' ', 'DWS', ' ', ' '],
-        ['14', ' ', 'DWS', ' ', ' ', ' ', 'TLS', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'DWS', ' '],
-        ['15', 'TWS', ' ', ' ', 'DLS', ' ', ' ', ' ', 'TWS', ' ', ' ', ' ', 'DLS', ' ', ' ', 'TWS']]
+        self.board = Board()
         self.scoreList = ['TWS', 'DWS', 'TLS', 'DLS']
         self.scores = {"a": 1, "c": 3, "b": 3, "e": 1, "d": 2, "g": 2,
        "f": 4, "i": 1, "h": 4, "k": 5, "j": 8, "m": 3,

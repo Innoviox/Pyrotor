@@ -1,6 +1,7 @@
 from cpu import cpu
 import player
 import functions as func
+from utils import *
 
 class Game():
     def __init__(self, name1, name2, mode1, mode2):
@@ -19,6 +20,7 @@ class Game():
          self.gameAlreadyInFile = False
          
     def startGame(self):
+        self.board = Board()
         self.player1 = player.Player(self.root, 1, self.name1, 150, 550, self.mode1, self.mode2, [], (), False)
         if self.name2 == "CPU":
             self.player2 = cpu.CPU()#self.root2, [], self.player1

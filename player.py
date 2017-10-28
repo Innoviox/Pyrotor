@@ -1,6 +1,6 @@
 import tiles
 import functions as func
-
+from utils import checkWord
 class Player():
     def __init__(self, root, playerNum, name, x, y, mode1, mode2, rack, distribution, cpuIn):
         self.dwlgen = 0
@@ -28,16 +28,7 @@ class Player():
         else:
             self.distribution = False
             self.de = False
-        #OSPD stands for official scrabble player's dictionary
-        #self.ospd = open("dict.txt").read().split() #taken from http://www.puzzlers.org/pub/wordlists/ospd.txt #/Volumes/PYTHONDISK/
-        try:
-            ospd = open("newDict.txt").read().split("\n") #taken from https://raw.githubusercontent.com/xjtian/PyScrabble/master/wordlists/OSPD4_stripped.txt
-            self.ospd = []
-            for word in ospd:
-                self.ospd.append(word.strip())
-        except:
-            func.popup(self.root, "Dictionary File Not Found", "Dictionary File Not Found\n\n\n", 500, 500)
-            end()
+    
         self.scores = {"a": 1, "c": 3, "b": 3, "e": 1, "d": 2, "g": 2,
        "f": 4, "i": 1, "h": 4, "k": 5, "j": 8, "m": 3,
        "l": 1, "o": 1, "n": 1, "q": 10, "p": 3, "s": 1,
@@ -653,11 +644,7 @@ class Player():
                     self.rack.append(letter.upper()) 
             
     def checkWord(self, word):
-        #print(word, word.upper(), word.lower())
-        if word in self.ospd or word.upper() in self.ospd or word.lower() in self.ospd:
-            return True
-        else:
-            return False
+        return checkWord(word)
         
     def removeDuplicates(self, oldList):
           newList = []
@@ -845,12 +832,7 @@ class Player():
         touching['column'] = column
         touching['text'] = boardToCheck[row][column]
         return touching
-    
-    def checkWord(self, word):
-        if word.upper() in self.ospd or word.lower() in self.ospd:
-            return True
-        else:
-            return False
+
         
     def returnMovables(self):
         for movable in self.movables:
