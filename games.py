@@ -1,4 +1,4 @@
-import cpu
+from cpu import cpu
 import player
 import functions as func
 

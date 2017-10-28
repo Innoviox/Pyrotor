@@ -13,6 +13,7 @@ def genidstr(obj):
         s += func.printable[10:-6][(int(i)+func.randint(15, 450)) % 65]
     return s
 try:
+    import apoji
     from matplotlib.mathtext import math_to_image, MathTextParser
     from matplotlib.font_manager import FontProperties
     from io import BytesIO

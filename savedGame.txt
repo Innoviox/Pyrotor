@@ -1,20 +1,19 @@
-
 New Game
-Joe 22
-CPU 28
-a,a,a,a,a,a,a,a,a,b,b,c,c,d,d,d,e,e,e,e,e,e,e,e,e,f,f,g,g,g,h,h,i,i,i,i,i,i,i,i,j,k,l,l,l,l,m,m,n,n,n,n,n,o,o,o,o,p,p,r,r,r,r,r,s,s,s,t,t,t,t,t,t,u,u,u,v,v,w,w,x,y,
+Joe 10
+CPU 0
+a,a,a,a,a,a,b,b,c,c,d,d,d,d,e,e,e,e,e,e,e,e,e,e,e,e,f,g,g,g,h,h,i,i,i,i,i,i,i,j,k,l,l,l,l,m,m,n,n,n,n,n,o,o,o,o,o,o,o,o,p,q,r,r,r,r,r,r,s,s,s,s,t,t,t,t,t,u,u,u,u,v,v,w,w,x,y,y,z,
 n n 1
-ONOYEUO
-DDEGSHI
+PIATNIA
+ONQYAAO
  |A |B |C |D |E |F |G |H |I |J |K |L |M |N |O |
 01|TWS| | |DLS| | | |TWS| | | |DLS| | |TWS|
 02| |DWS| | | |TLS| | | |TLS| | | |DWS| |
-03| | |DWS| | | |DLS| |Z| | | |DWS| | |
-04|DLS| | |DWS| | | |DLS|E| | |DWS| | |DLS|
-05| | | | |DWS| | | |R| |DWS| | | | |
-06| |TLS| | | |TLS| | |O|TLS| | | |TLS| |
-07| | |DLS| | | |DLS| |E| | | |DLS| | |
-08|TWS| | |DLS| | |Q|I|S| | |DLS| | |TWS|
+03| | |DWS| | | |DLS| |DLS| | | |DWS| | |
+04|DLS| | |DWS| | | |DLS| | | |DWS| | |DLS|
+05| | | | |DWS| | | | | |DWS| | | | |
+06| |TLS| | | |TLS| | | |TLS| | | |TLS| |
+07| | |DLS| | | |DLS| |DLS| | | |DLS| | |
+08|TWS| | |DLS| | |F|A| | | |DLS| | |TWS|
 09| | |DLS| | | |DLS| |DLS| | | |DLS| | |
 10| |TLS| | | |TLS| | | |TLS| | | |TLS| |
 11| | | | |DWS| | | | | |DWS| | | | |
@@ -22,4 +21,3 @@ DDEGSHI
 13| | |DWS| | | |DLS| |DLS| | | |DWS| | |
 14| |DWS| | | |TLS| | | |TLS| | | |DWS| |
 15|TWS| | |DLS| | | |TWS| | | |DLS| | |TWS|
-
