@@ -170,23 +170,16 @@ class CPU():
         return False
 
     def playWordOpp(self, word, row, col, direc, board, skip=False):
-        i = 0
-        #for letter in word:
-        while i < len(word):
+        for letter in word:
             if row>15 or col>15:
                 return False
             if board.board[row][col] in string.ascii_uppercase:
-                if skip:
-                    i -= 1
-                else:
-                    return False
-            else:
-                board.board[row][col] = word[i]
+                return False
+            board.board[row][col] = letter
             if direc=='A':
                 col += 1
             else:
                 row += 1
-            i += 1
         if board.checkBoard(board.board):
             return True
         return False
@@ -308,7 +301,10 @@ class CPU():
                 self.rack.remove(i)
             except:
                 pass
-        print(self.displayBoard(self.board.board), file=file)
+        if file is not sys.stdout:
+            print(self.displayBoard(self.board.board), file=file)
+        else:
+            self.displayBoard(self.board.board)
         self.drawTiles()
         return b
 

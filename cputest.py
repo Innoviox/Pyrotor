@@ -86,14 +86,16 @@ if __name__ == "__main__":
         i += 1
     os.makedirs("test"+str(i))
     os.chdir("test"+str(i))
-    from pycallgraph import PyCallGraph
+    from pycallgraph import PyCallGraph, Config
     from pycallgraph.output import GraphvizOutput
     run = 0
     while c.distribution:
-        direc = "turn{}:{}".format(run, ''.join(c.rack))
+        #c._run()
+        #continue
+        direc = "turn{}:{}".format(run, ''.join(sorted(c.rack)))
         os.makedirs(direc)
         os.chdir(direc)
-        g = GraphvizOutput(output_file="run.png", memory=True)
+        g = GraphvizOutput(output_file="run.png")
         with PyCallGraph(output=g):
             cProfile.run('c._run("board.txt")', 'run.profile')
         readable = open("run.txt", "w")
