@@ -73,6 +73,7 @@ def call(func):
 
 from .blueprint import *
 from utils import *
+import sys
 
 class CPU():
     def __init__(self, strategy=BlueprintBase):
@@ -103,37 +104,13 @@ class CPU():
                 yield word
     
     def displayBoard(self, board):
-        
-        count = 0
-        text = "-"*64
-        text += "\n"
-        text += "|"
-        for i in range(16):
-            line = board[i]
-            for j in line:
-                if j == " ":
-                    if i == 0:
-                        j = "  "
-                    else:
-                        j = "   "
-                if (j[0] in string.ascii_uppercase  or j == "*") and len(j) < 3:
-                    j = " " + j[0] + " "
-                text += j
-                text += "|"
-                count += 1
-                if count == 16 and i != 15:
-                    text += "\n"
-                    text += "-" * 64
-                    text += "\n"
-                    text += "|"
-                    count = 0
-        text += "\n"
-        text += "-" * 64
-        text += "\n"
+        s="{bar}\n{sep}\n".format(bar="|",sep="-"*66)
+        text=s+s.join(''.join('|'+c.center(4 if j == 0 else 3) for j, c in enumerate(r)) for r in board) + s
+        text = text[2:-1]
         print(text)
+        return text
 
     def generate(self):
-#        t1=time.time()
         prevBoard = self.rNab()
         words = self.board.removeDuplicates(self.gacc(self.rack, len(self.rack)))
         places = self.board.getPlaces(self.board.board)
@@ -159,36 +136,20 @@ class CPU():
                     newBoard = self.rNab()
                     if self.playWord(word, rIndex, cIndex, direc, newBoard):
                         play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, self.rack)
-#                        yield play
-                        plays.append(play)
+                        yield play
                         continue
                         
                     newBoard = self.rNab()
                     if self.playWordOpp(word, rIndex, cIndex, direc, newBoard):
                         play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, self.rack, revWordWhenScoring=False)
-                        plays.append(play)
-#                        yield play
-#        print(time.time()-t1, "1")
-
-#        t2=time.time()
+                        yield play
 
         words = self.board.removeDuplicates(self.gac(self.rack, 7))
         for (d, row) in enumerate(self.board.board[1:]):
-#            yield from self.complete(self.slotify(row[1:]), 'A', d+1, words)
-            for play in self.complete(self.slotify(row[1:]), 'A', d+1, words):
-                plays.append(play)
-
+            yield from self.complete(self.slotify(row[1:]), 'A', d+1, words)
             
         for (d, col) in enumerate([[row[i] for row in self.board.board[1:]] for i in range(len(self.board.board))]):
-#            yield from self.complete(self.slotify(col), 'D', d, words)
-            for play in self.complete(self.slotify(col), 'D', d, words):
-                plays.append(play)
-##        a=time.time()-t1
-##        b=time.time()-t2
-##        print(b, "2")
-##        print(a, "total")
-        return plays
-
+            yield from self.complete(self.slotify(col), 'D', d, words)
 
     def proxyBoard(self):
         return Board(copy.deepcopy(self.board.board))
@@ -315,7 +276,9 @@ class CPU():
             exch.getEvaluation(self.rack)
             yield exch
 
-    def _run(self):
+    def _run(self, file=sys.stdout):
+        if file is not sys.stdout:
+            file = open(file, "w")
         strategy = self.BlueprintCreator(self.generate(), self.rack)
         b = strategy.pick()
         t='p'
@@ -331,21 +294,21 @@ class CPU():
         
         if t != 'e':
             s = skips_formatted(b)
-            print(s)
-            print(b.row, b.col)
-            print(b.score, b.valuation)
+            print(s, file=file)
+            print(b.row, b.col, file=file)
+            print(b.score, b.valuation, file=file)
             
             self.board = b.board
             self.score += b.score
         else:
-            print('Exchanging: {}\nValuation: {}'.format(b.word, b.valuation))
+            print('Exchanging: {}\nValuation: {}'.format(b.word, b.valuation), file=file)
 
         for i in b.word:
             try:
                 self.rack.remove(i)
             except:
                 pass
-        self.displayBoard(self.board.board)
+        print(self.displayBoard(self.board.board), file=file)
         self.drawTiles()
         return b
 
