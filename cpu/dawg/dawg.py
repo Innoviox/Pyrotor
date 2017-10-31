@@ -10,6 +10,9 @@ class Node:
         self.actions = {}
         
     def addAction(self, action, nodeTo, force=False):
+        #print(self.coolstr())
+        #print("adding action", action)
+        #print("\t", nodeTo.coolstr())
         if force or action not in self.actions:
             self.actions[action] = nodeTo
 
@@ -37,12 +40,24 @@ class Node:
             path.append(node)
             node=node.prev
         return path
-        
+
+    def _backtrace(self, nodes):
+        b=None
+        for node in nodes:
+            a=node.backtrace()
+            if self in a:
+                b = a
+        return b
+    
     def _reachable(self):
         if self.end:
             return []
         nodes = [self]
         for action, node in self.actions.items():
+##            _node = node
+##            while not _node.end:
+##                nodes.append(_node)
+                
             nodes.extend(node._reachable())
         return nodes
         
@@ -51,8 +66,8 @@ class Node:
         n = list(filter(lambda i: i is not self, n))
         return n
 
-    def path(self):
-        i=self.backtrace()
+    def path(self, nodes):
+        i=self._backtrace(nodes)
         i.extend(self.reachable())
         return i
 
@@ -129,33 +144,35 @@ class Dawg(Trie):
     def __init__(self):
         self.deletednodes = []
         self.replacements = {}
+        self.nodepaths = {}
         super(Dawg, self).__init__()       
-        
+
+    def pathgen(self):
+        for node in self.nodes:
+            self.nodepaths[node] = node.path(self.nodes)
     def minimize(self):
-        deleted = []
-        cantdelete=[]
         for node in self.nodes:
             for node2 in self.nodes:
-                if node.id != node2.id:
-                    if node2 not in node.path():
-                        for action, nodeTo in node.actions.copy().items():
-                            if action in node2.actions and action != "!":
-                                p=node.prev
-                                if p.catalysts() == node2.prev.catalysts():
-                                    for c_action in node2.catalysts():
-                                        p.addAction(c_action, node, force=True)
+                if node.id != node2.id and node2 not in self.nodepaths[node]:
+                    for action, nodeTo in node.actions.copy().items():
+                        if action in node2.actions and action != "!":
+                            p=node.prev
+                            p2 = node2.prev
+                            if p is not None and p2 is not None and p.catalysts() == p2.catalysts():
+                                for c_action in node2.catalysts():
+                                    #print("adding action {} from\n\t{} \nto \n\t{}".format(c_action, node2.coolstr(), p.coolstr()))
+                                    #print("because of", action, node2.coolstr(), p.coolstr(), p2.coolstr(), sep="\n\t")
+                                    p.addAction(c_action, node)#, force=True)
                                 for n_action, nodeTo in node2.actions.items():
-                                    if node.prev.catalysts() == nodeTo.prev.catalysts():
+                                    if p.catalysts() == nodeTo.prev.catalysts():
                                         if n_action not in node.actions:
+                                            #print("adding action {} from\n\t{} \nto \n\t{}".format(n_action, nodeTo.coolstr(), node.coolstr()))
                                             node.addAction(n_action, nodeTo)
                                         else:
                                             _node = node.actions[n_action]
                                             for _n_action, _nodeTo in nodeTo.actions.items():
-                                                _node.addAction(_n_action, _nodeTo)
-                                if node2 not in cantdelete:
-                                    deleted.append(node2)
-                                    cantdelete.extend(node2.path())
-                                    cantdelete.append(node2)
+                                                #print("adding action {} from\n\t{} \nto \n\t{}".format(_n_action, _nodeTo.coolstr(), _node.coolstr()))
+                                                _node.addAction(_n_action, _nodeTo, force=True)
 
                     if not node.onlyEnd() and node.ame() == node2.ame():
                         same = True
@@ -166,12 +183,18 @@ class Dawg(Trie):
                             p2=node2.prev
                             for c_action in node2.catalysts():
                                 if c_action is not None:
+                                    #print("adding action {} from\n\t{} \nto \n\t{}".format(c_action, node.coolstr(), p2.coolstr()))
                                     p2.addAction(c_action, node, force=True)
                             for action, nodeTo in node2.actions.items():
                                 if action in node.actions:
                                     nodeTo.prev = node
+                                    #print("adding action {} from\n\t{} \nto \n\t{}".format(action, node2.coolstr(), node.coolstr()))
                                     node.addAction(action, nodeTo, force=True)
                             self.replacements[node2] = node
+##                    print(self.parse("AAH"))
+##                    print(self.parse("AAL"))
+##                    print(node.id, node2.id)
+##                    input()
             
         for node in self.nodes:
             node.update(self.replacements)
@@ -188,6 +211,7 @@ if __name__ == "__main__":
     print(list(filter(lambda i:i.id==47, t.nodes))[0].getactions())
     #for i in range(len(t.nodes)):
     for i in range(1):
+        t.pathgen()
         t.minimize()
         #input(t)
     for n in t.deletednodes:
