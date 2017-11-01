@@ -5,17 +5,18 @@ def itersubs():
     for subd in subdicts.values():
         yield from subd
 
-from dawg import *
+from newdawg import *
 
 d = Dawg()
 words = ["AAHED", "AAHING", "AALII"]
-lex = list(sorted(subdicts["AB"]))[:100]
+lex = list(sorted(sorted(subdicts["AB"])))[:10]
+#lex.extend(list(sorted(sorted(subdicts["AC"])))[:100])
 for w in lex:
-    #print("adding {}".format(w))
+    print("adding {}".format(w))
     d.add(w)
-print('min')
-d.pathgen()
-d.minimize()
+#print('min')
+#d.pathgen()
+#d.minimize()
 print(d)
 #print(d.replacements)
 for w in lex:
@@ -23,7 +24,7 @@ for w in lex:
         print(w)
         for i in range(len(w)+1):
             j=d.parse(w[:i])
-            print("\t {}:".format(w[:i]), j.coolstr() if j else False)
+            #print("\t {}:".format(w[:i]), j.coolstr() if j else False)
  #   print(w, d.acceptable(w))
 #print(d)
 #print(d.acceptable("AAHII"))

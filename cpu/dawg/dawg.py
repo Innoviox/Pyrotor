@@ -151,23 +151,25 @@ class Dawg(Trie):
         for node in self.nodes:
             self.nodepaths[node] = node.path(self.nodes)
     def minimize(self):
+        minimized = []
         for node in self.nodes:
             for node2 in self.nodes:
-                if node.id != node2.id and node2 not in self.nodepaths[node]:
+                if node not in minimized and node.id != node2.id and node2 not in self.nodepaths[node] and node not in self.nodepaths[node2]:
                     for action, nodeTo in node.actions.copy().items():
-                        if action in node2.actions and action != "!":
-                            p=node.prev
+                        if action in node2.actions:# and action != "!":
+                            p = node.prev
                             p2 = node2.prev
                             if p is not None and p2 is not None and p.catalysts() == p2.catalysts():
                                 for c_action in node2.catalysts():
-                                    #print("adding action {} from\n\t{} \nto \n\t{}".format(c_action, node2.coolstr(), p.coolstr()))
-                                    #print("because of", action, node2.coolstr(), p.coolstr(), p2.coolstr(), sep="\n\t")
-                                    p.addAction(c_action, node)#, force=True)
-                                for n_action, nodeTo in node2.actions.items():
+                                    #if p.id == 2 and c_action in 'EOLR':
+                                        #print("adding action {} from\n\t{} \nto \n\t{}".format(c_action, node2.coolstr(), p.coolstr()))
+                                        #print("because of", action, node2.coolstr(), p.coolstr(), p2.coolstr(), node.coolstr(), sep="\n\t")
+                                    p2.addAction(c_action, node)#, force=True)
+                                for n_action, nodeTo in node2.actions.copy().items():
                                     if p.catalysts() == nodeTo.prev.catalysts():
                                         if n_action not in node.actions:
                                             #print("adding action {} from\n\t{} \nto \n\t{}".format(n_action, nodeTo.coolstr(), node.coolstr()))
-                                            node.addAction(n_action, nodeTo)
+                                            node.addAction(n_action, nodeTo, force=True)
                                         else:
                                             _node = node.actions[n_action]
                                             for _n_action, _nodeTo in nodeTo.actions.items():
@@ -184,13 +186,16 @@ class Dawg(Trie):
                             for c_action in node2.catalysts():
                                 if c_action is not None:
                                     #print("adding action {} from\n\t{} \nto \n\t{}".format(c_action, node.coolstr(), p2.coolstr()))
-                                    p2.addAction(c_action, node, force=True)
+                                    if c_action in p2.actions:
+                                        p2.addAction(c_action, node, force=True)
                             for action, nodeTo in node2.actions.items():
                                 if action in node.actions:
                                     nodeTo.prev = node
                                     #print("adding action {} from\n\t{} \nto \n\t{}".format(action, node2.coolstr(), node.coolstr()))
-                                    node.addAction(action, nodeTo, force=True)
-                            self.replacements[node2] = node
+                                    if action in node.actions:
+                                        node.addAction(action, nodeTo, force=True)
+##                            self.replacements[node2] = node
+            minimized.extend((node, node2))
 ##                    print(self.parse("AAH"))
 ##                    print(self.parse("AAL"))
 ##                    print(node.id, node2.id)
@@ -217,10 +222,10 @@ if __name__ == "__main__":
     for n in t.deletednodes:
         pass
         #t.nodes.append(n)
-    print(t)
+    #print(t)
     #print(t.replacements)
     for w in lex:
-        print(w, t.parse(w))
+        print(w, t.parse(w), t.acceptable(w))
     #print(list(filter(lambda i:i.id==47, t.nodes))[0].getactions())
     ##print(t.parse("CAR"))
     ##print(t.parse("DOG"))
