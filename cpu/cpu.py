@@ -71,9 +71,9 @@ def call(func):
 
 
 
-from .blueprint import *
-from utils import *
-import sys
+from blueprint import BlueprintBase
+from utils import Move, Board, distribution, skips_formatted
+import random, string, itertools, sys, copy
 
 class CPU():
     def __init__(self, strategy=BlueprintBase):
@@ -114,14 +114,12 @@ class CPU():
         prevBoard = self.rNab()
         words = self.board.removeDuplicates(self.gacc(self.rack, len(self.rack)))
         places = self.board.getPlaces(self.board.board)
-        plays = []
         neighbors = []
 
         if places == []:
             for i in range(1, 15):
                 places.append((i, 8))
                 places.append((8, i))
-        across, down = [], []
         for place in places:
             r, c = place
             neighbors.append((r+1,c))
@@ -237,7 +235,6 @@ class CPU():
     def complete(self, slot, direc, depth, words):
         if depth==0:
             return []
-        newSlots = []
         slotForLen = slot[0]
         if slotForLen != '...............':
             edgeFinder = [i[0] for i in enumerate(slotForLen) if i[1] !='.']

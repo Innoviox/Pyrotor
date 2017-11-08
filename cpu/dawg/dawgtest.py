@@ -1,6 +1,8 @@
 import sys
 sys.path.append("../..")
 from utils import subdicts
+import os
+os.environ["PATH"] += ":/Users/chervjay/homebrew/bin"
 def itersubs():
     for subd in subdicts.values():
         yield from subd
@@ -9,10 +11,13 @@ from newdawg import *
 
 d = Dawg()
 words = ["AAHED", "AAHING", "AALII"]
-lex = list(sorted(sorted(subdicts["AB"])))[:10]
-#lex.extend(list(sorted(sorted(subdicts["AC"])))[:100])
+lex = list(sorted(sorted(subdicts["AB"])))#[:10]
+#lex.extend(list(sorted(sorted(subdicts["AC"]))))#[:100])
+from pycallgraph import PyCallGraph, Config
+from pycallgraph.output import GraphvizOutput
+g = GraphvizOutput(output_file="run.png")
+#with PyCallGraph(output=g):
 for w in lex:
-    print("adding {}".format(w))
     d.add(w)
 #print('min')
 #d.pathgen()
@@ -24,7 +29,7 @@ for w in lex:
         print(w)
         for i in range(len(w)+1):
             j=d.parse(w[:i])
-            #print("\t {}:".format(w[:i]), j.coolstr() if j else False)
+            #print("\t {}:".format(w[:i]), j.fstr() if j else False)
  #   print(w, d.acceptable(w))
 #print(d)
 #print(d.acceptable("AAHII"))
@@ -32,6 +37,6 @@ for w in lex:
 from timeit import timeit
 
 def check():
-    return d.acceptable("ABCDEFG")
+    return d.acceptable("AFPJP")
 
-print(timeit(check, number=1))
+print(timeit(check, number=1190764))
