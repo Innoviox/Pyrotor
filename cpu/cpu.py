@@ -111,7 +111,7 @@ class CPU():
         return text
 
     def generate(self):
-        prevBoard = self.rNab()
+        prevBoard = self.board.clone()
         words = self.board.removeDuplicates(self.gacc(self.rack, len(self.rack)))
         places = self.board.getPlaces(self.board.board)
         neighbors = []
@@ -131,13 +131,13 @@ class CPU():
             for neighbor in neighbors:
                 rIndex, cIndex = neighbor
                 for direc in ['A', 'D']:
-                    newBoard = self.rNab()
+                    newBoard = self.board.clone()
                     if self.playWord(word, rIndex, cIndex, direc, newBoard):
                         play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, self.rack)
                         yield play
                         continue
                         
-                    newBoard = self.rNab()
+                    newBoard = self.board.clone()
                     if self.playWordOpp(word, rIndex, cIndex, direc, newBoard):
                         play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, self.rack, revWordWhenScoring=False)
                         yield play
@@ -181,9 +181,6 @@ class CPU():
         if board.checkBoard(board.board):
             return True
         return False
-    
-    def rNab(self):
-        return Board([[col for col in row] for row in self.board.board])
 
     def gac(self, iterable, maxDepth):
         for depth in range(1, maxDepth + 1): 
@@ -204,6 +201,8 @@ class CPU():
                 currPos += 1
                 index -= 1
             else:
+                #cc = (depth, currPos) if direc == 'A' else (currPos, depth)
+                #if word[index] not in self.board.crosschecks[cc[0]][cc[1]]: return False
                 slot[newPos] = word[index]
                 if not wordPos:
                     wordPos = currPos+index
@@ -215,7 +214,7 @@ class CPU():
             return False
 
         newBoardSlot = [reps[index] if newLetter == '.' else newLetter for (index, newLetter) in enumerate(slot)]
-        newBoard = self.rNab()
+        newBoard = self.board.clone()
         if direc == 'A':
             newBoard.board[depth][1:] = newBoardSlot[:]
             col = wordPos
@@ -225,7 +224,7 @@ class CPU():
                 row[depth] = newBoardSlot[index]
             col = depth
             row = wordPos
-        move = Move(word, newBoard, row, col, direc, self.rNab(), self.rack, doNotScoreWord=True)
+        move = Move(word, newBoard, row, col, direc, self.board.clone(), self.rack, doNotScoreWord=True)
         if move.board.checkBoard(newBoard.board):
             move.getScore()
             move.getEvaluation(move.rack)
@@ -303,6 +302,7 @@ class CPU():
         else:
             self.displayBoard(self.board.board)
         self.drawTiles()
+        #self.board.updateCrosschecks(b)
         return b
 
         
