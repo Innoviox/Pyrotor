@@ -1,0 +1,90 @@
+Wed Nov 29 21:51:27 2017    run.profile
+
+         485634 function calls (485618 primitive calls) in 0.960 seconds
+
+   Ordered by: internal time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     2785    0.458    0.000    0.553    0.000 utils.py:174(getWords)
+    24107    0.062    0.000    0.062    0.000 utils.py:303(<listcomp>)
+    13944    0.057    0.000    0.074    0.000 utils.py:181(_getWord)
+    23284    0.056    0.000    0.318    0.000 utils.py:258(checkBoard)
+      929    0.041    0.000    0.565    0.001 cpu.py:50(generate)
+    12324    0.035    0.000    0.217    0.000 cpu.py:156(playWord)
+    11782    0.028    0.000    0.165    0.000 cpu.py:171(playWordOpp)
+    24107    0.028    0.000    0.105    0.000 utils.py:302(clone)
+    22393    0.024    0.000    0.024    0.000 utils.py:261(<listcomp>)
+      928    0.019    0.000    0.373    0.000 utils.py:376(score)
+    14782    0.018    0.000    0.019    0.000 utils.py:225(expandFrom)
+    24107    0.015    0.000    0.015    0.000 utils.py:110(__init__)
+31159/31143    0.012    0.000    0.017    0.000 {method 'join' of 'str' objects}
+     1856    0.012    0.000    0.020    0.000 utils.py:210(minimize)
+    14627    0.011    0.000    0.015    0.000 utils.py:123(checkWord)
+    84817    0.009    0.000    0.009    0.000 {built-in method builtins.len}
+    27400    0.008    0.000    0.014    0.000 cpu.py:186(gac)
+     3489    0.008    0.000    0.041    0.000 utils.py:255(removeDuplicates)
+    27888    0.007    0.000    0.007    0.000 {method 'count' of 'list' objects}
+       79    0.005    0.000    0.026    0.000 cpu.py:38(gacc)
+      929    0.005    0.000    0.389    0.000 blueprint.py:30(assureAttrs)
+      928    0.004    0.000    0.009    0.000 utils.py:98(getEvaluation)
+    32357    0.004    0.000    0.004    0.000 {method 'append' of 'list' objects}
+    17430    0.003    0.000    0.003    0.000 {method 'get' of 'dict' objects}
+        1    0.003    0.003    0.959    0.959 blueprint.py:11(pick)
+     8828    0.003    0.000    0.003    0.000 utils.py:211(<genexpr>)
+      928    0.002    0.000    0.376    0.000 utils.py:94(getScore)
+    14625    0.002    0.000    0.002    0.000 {method 'upper' of 'str' objects}
+      928    0.002    0.000    0.007    0.000 utils.py:267(<listcomp>)
+      929    0.001    0.000    0.391    0.000 blueprint.py:43(score)
+      928    0.001    0.000    0.001    0.000 utils.py:78(__init__)
+      928    0.001    0.000    0.001    0.000 {built-in method builtins.sorted}
+     1856    0.001    0.000    0.001    0.000 utils.py:213(<dictcomp>)
+      928    0.001    0.000    0.001    0.000 utils.py:271(<listcomp>)
+     3496    0.001    0.000    0.001    0.000 {method 'remove' of 'list' objects}
+     4414    0.001    0.000    0.001    0.000 utils.py:267(<genexpr>)
+     1856    0.001    0.000    0.001    0.000 utils.py:421(<listcomp>)
+      928    0.001    0.000    0.001    0.000 utils.py:278(<listcomp>)
+     3938    0.001    0.000    0.001    0.000 utils.py:104(<genexpr>)
+      928    0.001    0.000    0.001    0.000 {built-in method builtins.min}
+      928    0.001    0.000    0.001    0.000 utils.py:293(<listcomp>)
+     3486    0.001    0.000    0.001    0.000 {method 'extend' of 'list' objects}
+     3486    0.001    0.000    0.001    0.000 {method 'lower' of 'str' objects}
+      928    0.001    0.000    0.001    0.000 {built-in method builtins.max}
+     2784    0.001    0.000    0.001    0.000 {method 'keys' of 'collections.OrderedDict' objects}
+     2784    0.001    0.000    0.001    0.000 {method 'values' of 'collections.OrderedDict' objects}
+        1    0.000    0.000    0.960    0.960 <string>:1(<module>)
+      928    0.000    0.000    0.000    0.000 {method 'issubset' of 'set' objects}
+     2398    0.000    0.000    0.000    0.000 {method 'items' of 'collections.OrderedDict' objects}
+      928    0.000    0.000    0.000    0.000 utils.py:379(<listcomp>)
+        1    0.000    0.000    0.000    0.000 {built-in method io.open}
+     1148    0.000    0.000    0.000    0.000 {method 'replace' of 'str' objects}
+       31    0.000    0.000    0.001    0.000 cpu.py:269(slotify)
+      496    0.000    0.000    0.000    0.000 cpu.py:271(<genexpr>)
+      256    0.000    0.000    0.000    0.000 {method 'center' of 'str' objects}
+        5    0.000    0.000    0.000    0.000 {built-in method builtins.print}
+        1    0.000    0.000    0.960    0.960 {built-in method builtins.exec}
+       68    0.000    0.000    0.000    0.000 {method 'index' of 'list' objects}
+        1    0.000    0.000    0.960    0.960 cpu.py:289(run)
+        1    0.000    0.000    0.000    0.000 cpu.py:32(drawTiles)
+       16    0.000    0.000    0.000    0.000 cpu.py:86(<listcomp>)
+        5    0.000    0.000    0.000    0.000 random.py:222(_randbelow)
+       17    0.000    0.000    0.000    0.000 cpu.py:45(<genexpr>)
+       31    0.000    0.000    0.000    0.000 cpu.py:255(complete)
+        1    0.000    0.000    0.000    0.000 cpu.py:43(displayBoard)
+        1    0.000    0.000    0.000    0.000 utils.py:44(skips)
+        1    0.000    0.000    0.000    0.000 _bootlocale.py:23(getpreferredencoding)
+        5    0.000    0.000    0.000    0.000 random.py:252(choice)
+        1    0.000    0.000    0.000    0.000 utils.py:70(skips_formatted)
+        1    0.000    0.000    0.000    0.000 utils.py:297(getPlaces)
+        1    0.000    0.000    0.000    0.000 {method 'format' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 {built-in method _locale.nl_langinfo}
+        1    0.000    0.000    0.000    0.000 codecs.py:185(__init__)
+        1    0.000    0.000    0.000    0.000 blueprint.py:4(__init__)
+        6    0.000    0.000    0.000    0.000 utils.py:75(<genexpr>)
+        7    0.000    0.000    0.000    0.000 {method 'getrandbits' of '_random.Random' objects}
+        5    0.000    0.000    0.000    0.000 {method 'bit_length' of 'int' objects}
+        1    0.000    0.000    0.000    0.000 blueprint.py:8(setMoves)
+        1    0.000    0.000    0.000    0.000 utils.py:298(<listcomp>)
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        1    0.000    0.000    0.000    0.000 utils.py:299(<listcomp>)
+
+
