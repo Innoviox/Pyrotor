@@ -1,4 +1,5 @@
 from time import time
+from tqdm import tqdm
 
 class BlueprintBase():
     def __init__(self, moves, rack):
@@ -9,24 +10,25 @@ class BlueprintBase():
         self.moves = filter(bool, moves)
 		
     def _pick(self):
-        # bestMove = None
-        # #a=0
-        # #t_=0
-        # bestScore = 0
-        # for move in self.moves:
-        #     #t=time()
-        #     ms = self.score(move)
-        #     if ms > bestScore:
-        #         bestMove = move
-        #         bestScore = ms
-        #     #t_+=time()-t
-        #     #a+=1
-        # #t_/=a
-        # #print(t_, a, t_*a)
-        # if self.score(bestMove) > 0: #lol
-        #     return bestMove
-        # return None
-        return sorted(self.moves, key=lambda i:-self.score(i))
+        bestMove = None
+        #a=0
+        #t_=0
+        bestScore = 0
+        m = list(self.moves)
+        for move in tqdm(m, desc="Analyzing"):
+            #t=time()
+            ms = self.score(move)
+            if ms > bestScore:
+                bestMove = move
+                bestScore = ms
+            #t_+=time()-t
+            #a+=1
+        #t_/=a
+        #print(t_, a, t_*a)
+        #if self.score(bestMove) > 0: #lol
+        return [bestMove]
+        #return None
+        #return sorted(self.moves, key=lambda i:-self.score(i))
 
     def pick(self):
         return next(self.pick_n(1))

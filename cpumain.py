@@ -36,16 +36,16 @@ def testweights():
     from random import random
 
     #args = [[random() * 4, random() * 4] for i in range(100)]
-    args = [[1, i / 10] for i in range(11, 51)]
+    args = [[1, i / 10] for i in range(16, 51)]
     for w1, w2 in args:
-        d = "new-cpu-testing-4 {} {}".format(round(w1, 4), round(w2, 4))
+        d = "cpu-testing {} {}".format(round(w1, 4), round(w2, 4))
         os.mkdir(d)
         os.chdir(d)
-        for i in range(10):
+        for i in range(100):
             print(i)
             main(w1, w2, "run{}.txt".format(i))
         os.chdir("..")
-main(1, 1, "run3.txt")
+main(1, 1, "run.txt")
 # testweights()
 def results():
     for i in os.listdir():

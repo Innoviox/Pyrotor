@@ -1,15 +1,11 @@
-#def print(*args, **kwargs):pass #print-suppresser
-def call(func):
-    def inner(*args, **kwargs):
-        print("calling {}".format(func.__name__))
-        return func(*args, **kwargs)
-    return inner
-
-
-
 from .blueprint import BlueprintBase
 from .utils import Move, Board, distribution, skips_formatted, insert
-import random, string, itertools, sys, copy
+import random
+import string
+import itertools
+import sys
+import copy
+from tqdm import tqdm
 
 class CPU():
     def __init__(self, strategy=BlueprintBase, bl_args=[]):
@@ -64,7 +60,7 @@ class CPU():
             neighbors.append((r,c+1))
             neighbors.append((r,c-1))
         neighbors = self.board.removeDuplicates(neighbors)
-        for word in words:
+        for word in tqdm(words, desc="Generating moves"):
             for neighbor in neighbors:
                 rIndex, cIndex = neighbor
                 for direc in ['A', 'D']:
@@ -80,10 +76,10 @@ class CPU():
                         yield play
 
         words = self.board.removeDuplicates(self.gac(self.rack, 7))
-        for (d, row) in enumerate(self.board.board[1:]):
+        for (d, row) in tqdm(list(enumerate(self.board.board[1:])), desc="Scanning rows"):
             yield from self.complete(self.slotify(row[1:]), 'A', d+1, words)
             
-        for (d, col) in enumerate([[row[i] for row in self.board.board[1:]] for i in range(len(self.board.board))]):
+        for (d, col) in tqdm(list(enumerate([[row[i] for row in self.board.board[1:]] for i in range(len(self.board.board))])), desc="Scanning cols"):
             yield from self.complete(self.slotify(col), 'D', d, words)
 
     def generate_checked(self):
@@ -191,13 +187,14 @@ class CPU():
     def insert(self, s, pos, word):
         slot, reps = s
         idx = w_pos = 0
+        l = len(word)
         for p in range(pos, 15):
             if slot[p] == '.':
                 slot = slot[:p] + word[w_pos] + slot[p + 1:]
                 w_pos += 1
                 if not idx:
                     idx = p + 1
-                if w_pos == len(word):
+                if w_pos == l:
                     return slot, reps, idx
         return False
 
@@ -238,9 +235,8 @@ class CPU():
             for word in words:
                 l = len(word)
                 for pos in range(edgeFinder[0], edgeFinder[-1]+l+2):
-                    if pos-l in range(15):
-                        if slotForLen[pos-l] == '.':
-                            yield self.place(slot, pos-l, word, direc, depth)
+                    if pos-l in range(15) and slotForLen[pos-l] == '.':
+                        yield self.place(slot, pos-l, word, direc, depth)
 
         #return newSlots
 
