@@ -17,20 +17,29 @@ def write_state_to_file(c, moves, racks, times, scores, file='run.txt'):
     f = open(file,'w',encoding='utf-8')
     f.write(s)
     f.close()
-def main(w1, w2, f):
+
+def main(w1, w2, f, racks=None):
     c = cpu.CPU(strategy=WeightedScorer, bl_args=[w1, w2])
     ms=[]
     rs=[]
     ts=[]
     ss=[]
-    while c.distribution:
+    while (not racks) or c.distribution:
+        if racks is not None:
+            try:
+              c.rack = next(racks)
+            except StopIteration:
+                return
+
         rs.append(''.join(c.rack))
         t=time.time()
         ms.append(c.run())
         ts.append(round(time.time()-t, 2))
         ss.append(c.score)
         write_state_to_file(c, ms, rs, ts, ss, file=f)
-# main(1, 1, "run.txt")
+
+racks = map(list, ["ABCDEFG", "FHRUAPO", "BURIFOW", "ROGHCPA", "RUGNVPE", "SATIENT"])
+main(1, 1, "run-racks-minmaxed.txt", racks=iter(racks))
 import os
 def testweights():
     from random import random
@@ -45,7 +54,7 @@ def testweights():
             print(i)
             main(w1, w2, "run{}.txt".format(i))
         os.chdir("..")
-main(1, 1, "run.txt")
+# main(1, 1, "run2.txt")
 # testweights()
 def results():
     for i in os.listdir():

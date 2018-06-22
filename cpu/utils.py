@@ -415,3 +415,21 @@ def insert(slot, pos, word):
     slot, reps = slot
     s = slot[:pos] + ''.join(interleave(word, slot[pos:].split('.'))).replace(' ', '.')[:-1]
     return s, reps, pos + slot[pos:].index(".") + 1  # s[pos:].index(word[0])
+
+def minmax(n_list):
+    min_pair, max_pair = [16, 16], [-16, -16]
+    for n in n_list:
+        x, y = n
+        if x > max_pair[0]:
+            max_pair[0] = x
+        if y > max_pair[1]:
+            max_pair[1] = y
+
+        if x < min_pair[0]:
+            min_pair[0] = x
+        if y < min_pair[1]:
+            min_pair[1] = y
+
+    for i in range(min_pair[0], max_pair[0]):
+        for j in range(min_pair[1], max_pair[1]):
+            yield i, j

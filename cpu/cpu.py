@@ -1,5 +1,5 @@
 from .blueprint import BlueprintBase
-from .utils import Move, Board, distribution, skips_formatted, insert
+from .utils import Move, Board, distribution, skips_formatted, insert, minmax
 import random
 import string
 import itertools
@@ -10,11 +10,11 @@ from tqdm import tqdm
 class CPU():
     def __init__(self, strategy=BlueprintBase, bl_args=[]):
         self.board = Board()
-        
+
         self.rack = []
         self.distribution = distribution[:]
         self.drawTiles()
-            
+
         self.checkWord = self.board.checkWord
         self.extraList = self.board.extraList
 
@@ -30,12 +30,12 @@ class CPU():
             letter = random.choice(self.distribution)
             self.rack.append(letter.upper())
             self.distribution.remove(letter)
-    
+
     def gacc(self, iterable, maxDepth):
         for word in self.gac(iterable, maxDepth):
             if self.checkWord(word):
                 yield word
-    
+
     def displayBoard(self, board):
         s="{bar}\n{sep}\n".format(bar="|",sep="-"*66)
         text=s+s.join(''.join('|'+c.center(4 if j == 0 else 3) for j, c in enumerate(r)) for r in board) + s
@@ -44,6 +44,17 @@ class CPU():
         return text
 
     def generate(self):
+        yield from self._gen_flat()
+
+        words = self.board.removeDuplicates(self.gac(self.rack, 7))
+
+        for (d, row) in tqdm(list(enumerate(self.board.board[1:])), desc="Scanning rows"):
+            yield from self.complete(self.slotify(row[1:]), 'A', d+1, words)
+
+        for (d, col) in tqdm(list(enumerate([[row[i] for row in self.board.board[1:]] for i in range(len(self.board.board))])), desc="Scanning cols"):
+            yield from self.complete(self.slotify(col), 'D', d, words)
+
+    def _gen_flat(self):
         prevBoard = self.board.clone()
         words = self.board.removeDuplicates(self.gacc(self.rack, len(self.rack)))
         places = self.board.getPlaces(self.board.board)
@@ -51,15 +62,17 @@ class CPU():
 
         if not places:
             for i in range(1, 15):
-                places.append((i, 8))
-                places.append((8, i))
-        for place in places:
-            r, c = place
-            neighbors.append((r+1,c))
-            neighbors.append((r-1,c))
-            neighbors.append((r,c+1))
-            neighbors.append((r,c-1))
-        neighbors = self.board.removeDuplicates(neighbors)
+                neighbors.append((i, 8))
+                neighbors.append((8, i))
+        else:
+            for place in places:
+                r, c = place
+                neighbors.append((r + 1, c))
+                neighbors.append((r - 1, c))
+                neighbors.append((r, c + 1))
+                neighbors.append((r, c - 1))
+            neighbors = self.board.removeDuplicates(neighbors)
+            # neighbors = minmax(neighbors)
         for word in tqdm(words, desc="Generating moves"):
             for neighbor in neighbors:
                 rIndex, cIndex = neighbor
@@ -69,82 +82,11 @@ class CPU():
                         play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, self.rack)
                         yield play
                         continue
-                        
+
                     newBoard = self.board.clone()
                     if self.playWordOpp(word, rIndex, cIndex, direc, newBoard):
                         play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, self.rack, revWordWhenScoring=False)
                         yield play
-
-        words = self.board.removeDuplicates(self.gac(self.rack, 7))
-        for (d, row) in tqdm(list(enumerate(self.board.board[1:])), desc="Scanning rows"):
-            yield from self.complete(self.slotify(row[1:]), 'A', d+1, words)
-            
-        for (d, col) in tqdm(list(enumerate([[row[i] for row in self.board.board[1:]] for i in range(len(self.board.board))])), desc="Scanning cols"):
-            yield from self.complete(self.slotify(col), 'D', d, words)
-
-    def generate_checked(self):
-        self.strategy = strategy = self.BlueprintCreator(self.generate(), self.rack, *self.bl_args)
-        best = None
-        bestScore = 0
-        prevBoard = self.board.clone()
-        words = self.board.removeDuplicates(self.gacc(self.rack, len(self.rack)))
-        places = self.board.getPlaces(self.board.board)
-        neighbors = []
-
-        if not places:
-            for i in range(1, 15):
-                places.append((i, 8))
-                places.append((8, i))
-        for place in places:
-            r, c = place
-            neighbors.append((r + 1, c))
-            neighbors.append((r - 1, c))
-            neighbors.append((r, c + 1))
-            neighbors.append((r, c - 1))
-        neighbors = self.board.removeDuplicates(neighbors)
-        for word in words:
-            for neighbor in neighbors:
-                rIndex, cIndex = neighbor
-                for direc in ['A', 'D']:
-                    newBoard = self.board.clone()
-                    if self.playWord(word, rIndex, cIndex, direc, newBoard):
-                        play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, self.rack)
-                        play.getScore()
-                        play.getEvaluation(self.rack)
-                        s = strategy.score(play)
-                        if bestScore < s:
-                            best = play
-                            bestScore = s
-                        #yield play
-                        continue
-
-                    newBoard = self.board.clone()
-                    if self.playWordOpp(word, rIndex, cIndex, direc, newBoard):
-                        play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, self.rack,
-                                    revWordWhenScoring=False)
-                        play.getScore()
-                        play.getEvaluation(self.rack)
-                        s = strategy.score(play)
-                        if bestScore < s:
-                            best = play
-                            bestScore = s
-                        #yield play
-
-        words = self.board.removeDuplicates(self.gac(self.rack, 7))
-        for (d, row) in enumerate(self.board.board[1:]):
-            for move in self.complete(self.slotify(row[1:]), 'A', d + 1, words):
-                s = strategy.score(play)
-                if bestScore < s:
-                    best = play
-                    bestScore = s
-
-        for (d, col) in enumerate([[row[i] for row in self.board.board[1:]] for i in range(len(self.board.board))]):
-            for move in self.complete(self.slotify(col), 'D', d, words):
-                s = strategy.score(play)
-                if bestScore < s:
-                    best = play
-                    bestScore = s
-        return best
 
     def proxyBoard(self):
         return Board(copy.deepcopy(self.board.board))
@@ -180,7 +122,7 @@ class CPU():
         return False
 
     def gac(self, iterable, maxDepth):
-        for depth in range(1, maxDepth + 1): 
+        for depth in range(1, maxDepth + 1):
             for word in itertools.permutations(iterable, depth):
                 yield ''.join(word)
 
@@ -225,7 +167,7 @@ class CPU():
             move.getEvaluation(move.rack)
             return move
         return False
-        
+
     def complete(self, slot, direc, depth, words):
         if depth==0:
             return []
@@ -275,22 +217,22 @@ class CPU():
         b = strategy.pick()
         #b = self.generate_checked()
         t='p'
-        
+
         if b is None:
             strategy.setMoves(self.exchange())
             b = strategy.pick()
             t='e'
-            
+
         if b is None:
             print('I must pass...')
             return False
-        
+
         if t != 'e':
             s = skips_formatted(b)
             print(s, file=file)
             print(b.row, b.col, file=file)
             print(b.score, b.valuation, file=file)
-            
+
             self.board = b.board
             self.score += b.score
         else:
