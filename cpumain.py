@@ -38,24 +38,27 @@ def main(w1, w2, f, racks=None):
         ss.append(c.score)
         write_state_to_file(c, ms, rs, ts, ss, file=f)
 
-racks = map(list, ["ABCDEFG", "FHRUAPO", "BURIFOW", "ROGHCPA", "RUGNVPE", "SATIENT"])
-main(1, 1, "run-racks-minmaxed.txt", racks=iter(racks))
+# racks = map(list, ["ABCDEFG", "FHRUAPO", "BURIFOW", "ROGHCPA", "RUGNVPE", "SATIENT"])
+# main(1, 1, "fb.txt", racks=iter(racks))
 import os
 def testweights():
     from random import random
 
-    #args = [[random() * 4, random() * 4] for i in range(100)]
-    args = [[1, i / 10] for i in range(16, 51)]
+    args = [[random() * 4, random() * 4] for i in range(1000)]
+    # args = [[1, i / 10] for i in range(16, 510)]
     for w1, w2 in args:
-        d = "cpu-testing {} {}".format(round(w1, 4), round(w2, 4))
+        d = "cpu-testing-israel {} {}".format(round(w1, 4), round(w2, 4))
         os.mkdir(d)
         os.chdir(d)
         for i in range(100):
             print(i)
-            main(w1, w2, "run{}.txt".format(i))
+            try:
+                main(w1, w2, "run{}.txt".format(i))
+            except Exception as e:
+                print(e)
         os.chdir("..")
 # main(1, 1, "run2.txt")
-# testweights()
+testweights()
 def results():
     for i in os.listdir():
         if len(i.split())==2:

@@ -1,0 +1,201 @@
+Fri Jun 22 17:42:29 2018    run.profile
+
+         39179981 function calls (39179964 primitive calls) in 607.183 seconds
+
+   Ordered by: internal time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+  2138815  146.491    0.000  146.825    0.000 cpu.py:129(insert)
+  2138815   74.508    0.000  307.252    0.000 cpu.py:143(place)
+  2138846   69.879    0.000  377.180    0.000 cpu.py:171(complete)
+    18822   60.000    0.003  116.914    0.006 utils.py:127(getWords)
+  2139651   43.013    0.000  552.952    0.000 cpu.py:46(generate)
+        1   37.157   37.157  607.000  607.000 blueprint.py:12(_pick)
+470026/470010   36.271    0.000   47.910    0.000 {method 'join' of 'str' objects}
+    17050   27.886    0.002  157.613    0.009 utils.py:216(checkBoard)
+  1481977   26.816    0.000   37.479    0.000 {built-in method builtins.all}
+   241438   18.232    0.000   48.002    0.000 utils.py:168(minimize)
+   936237   12.219    0.000   12.270    0.000 utils.py:183(expandFrom)
+  1702373   11.510    0.000   12.129    0.000 utils.py:124(checkWord)
+  1282035    6.614    0.000    6.614    0.000 utils.py:169(<genexpr>)
+    18822    5.390    0.000   53.392    0.003 utils.py:166(<listcomp>)
+  1054399    4.969    0.000    4.969    0.000 utils.py:226(<genexpr>)
+    15221    3.561    0.000   25.553    0.002 utils.py:226(<listcomp>)
+   241438    2.534    0.000    2.534    0.000 utils.py:171(<dictcomp>)
+      836    2.485    0.003  132.447    0.158 cpu.py:57(_gen_flat)
+  2887872    2.482    0.000    2.482    0.000 {method 'count' of 'list' objects}
+    60302    2.262    0.000    4.551    0.000 utils.py:261(clone)
+    60302    1.539    0.000    1.539    0.000 utils.py:262(<listcomp>)
+     1800    1.330    0.001   28.214    0.016 utils.py:335(score)
+ 10852543    1.300    0.000    1.300    0.000 {built-in method builtins.len}
+    29040    0.896    0.000   71.332    0.002 cpu.py:94(playWord)
+    70393    0.824    0.000    1.527    0.000 utils.py:213(removeDuplicates)
+  1481977    0.821    0.000    0.821    0.000 {method 'strip' of 'str' objects}
+    60302    0.750    0.000    0.750    0.000 utils.py:110(__init__)
+    28427    0.745    0.000   53.588    0.002 cpu.py:109(playWordOpp)
+  1481977    0.742    0.000    0.742    0.000 {method 'split' of 'str' objects}
+      166    0.440    0.003    0.616    0.004 cpu.py:34(gacc)
+    15921    0.368    0.000    0.368    0.000 utils.py:219(<listcomp>)
+  1568103    0.353    0.000    0.353    0.000 {method 'upper' of 'str' objects}
+     1838    0.351    0.000    0.351    0.000 utils.py:237(<listcomp>)
+  2216374    0.295    0.000    0.295    0.000 {method 'append' of 'list' objects}
+  1446555    0.269    0.000    0.269    0.000 {method 'get' of 'dict' objects}
+     1838    0.192    0.000    0.192    0.000 utils.py:252(<listcomp>)
+    27400    0.172    0.000    0.179    0.000 cpu.py:124(gac)
+     1838    0.168    0.000    0.170    0.000 utils.py:230(<listcomp>)
+        1    0.167    0.167  607.166  607.166 blueprint.py:41(pick_iter)
+     1800    0.133    0.000   28.347    0.016 utils.py:94(getScore)
+     2000    0.132    0.000    0.330    0.000 _tqdm.py:900(__iter__)
+     1800    0.113    0.000   16.592    0.009 blueprint.py:44(assureAttrs)
+   440779    0.087    0.000    0.087    0.000 {method 'keys' of 'collections.OrderedDict' objects}
+      325    0.082    0.000    0.100    0.000 _tqdm.py:197(format_meter)
+     1800    0.076    0.000   16.668    0.009 blueprint.py:57(score)
+     1800    0.069    0.000    0.355    0.000 utils.py:98(getEvaluation)
+     1800    0.064    0.000    0.064    0.000 utils.py:341(<listcomp>)
+     3528    0.060    0.000    0.060    0.000 utils.py:383(<listcomp>)
+   245017    0.052    0.000    0.052    0.000 {method 'items' of 'collections.OrderedDict' objects}
+     8340    0.049    0.000    0.049    0.000 utils.py:104(<genexpr>)
+     2252    0.043    0.000    0.043    0.000 utils.py:78(__init__)
+     1417    0.041    0.000    0.041    0.000 cpu.py:153(<listcomp>)
+      325    0.025    0.000    0.124    0.000 _tqdm.py:884(__repr__)
+    70390    0.017    0.000    0.017    0.000 {method 'extend' of 'list' objects}
+      339    0.016    0.000    0.024    0.000 _tqdm.py:108(__exit__)
+      325    0.013    0.000    0.026    0.000 _tqdm.py:190(print_status)
+      646    0.010    0.000    0.014    0.000 _tqdm.py:153(format_interval)
+      339    0.008    0.000    0.017    0.000 _tqdm.py:105(__enter__)
+      325    0.007    0.000    0.013    0.000 _tqdm.py:184(fp_write)
+     1800    0.006    0.000    0.006    0.000 {built-in method builtins.sorted}
+     1940    0.006    0.000    0.006    0.000 {method 'format' of 'str' objects}
+      339    0.006    0.000    0.008    0.000 _tqdm.py:101(release)
+      339    0.005    0.000    0.009    0.000 _tqdm.py:97(acquire)
+      333    0.005    0.000    0.005    0.000 {method 'write' of '_io.TextIOWrapper' objects}
+     1842    0.005    0.000    0.005    0.000 {built-in method builtins.min}
+     2492    0.005    0.000    0.005    0.000 {built-in method builtins.max}
+    26292    0.004    0.000    0.004    0.000 {method 'values' of 'collections.OrderedDict' objects}
+       31    0.003    0.000    0.013    0.000 cpu.py:185(slotify)
+        8    0.003    0.000    0.012    0.002 _tqdm.py:1075(close)
+      339    0.003    0.000    0.003    0.000 {method 'acquire' of '_multiprocessing.SemLock' objects}
+      496    0.002    0.000    0.002    0.000 cpu.py:187(<genexpr>)
+     9609    0.002    0.000    0.002    0.000 {method 'lower' of 'str' objects}
+     6074    0.002    0.000    0.002    0.000 {method 'remove' of 'list' objects}
+      339    0.002    0.000    0.002    0.000 {method 'release' of '_multiprocessing.SemLock' objects}
+        4    0.002    0.000    0.006    0.001 _tqdm.py:641(__init__)
+        1    0.001    0.001  607.186  607.186 <string>:1(<module>)
+     1753    0.001    0.000    0.001    0.000 {method 'index' of 'list' objects}
+     1764    0.001    0.000    0.001    0.000 {method 'issubset' of 'set' objects}
+        4    0.001    0.000    0.003    0.001 _monitor.py:48(exit)
+     1617    0.001    0.000    0.001    0.000 {built-in method builtins.divmod}
+        4    0.001    0.000    0.001    0.000 _utils.py:215(_environ_cols_linux)
+       24    0.001    0.000    0.001    0.000 {method 'acquire' of '_thread.lock' objects}
+       23    0.001    0.000    0.001    0.000 cpu.py:176(<listcomp>)
+      325    0.001    0.000    0.001    0.000 {method 'flush' of '_io.TextIOWrapper' objects}
+        4    0.001    0.000    0.005    0.001 _tqdm.py:431(_decr_instances)
+        1    0.001    0.001  607.185  607.185 cpu.py:213(run)
+        2    0.001    0.000  607.167  303.583 blueprint.py:36(pick_n)
+       60    0.001    0.000    0.001    0.000 utils.py:257(<genexpr>)
+        7    0.000    0.000    0.001    0.000 random.py:253(choice)
+        1    0.000    0.000    0.001    0.001 {built-in method io.open}
+     1762    0.000    0.000    0.000    0.000 {built-in method time.time}
+        4    0.000    0.000    0.001    0.000 threading.py:334(notify)
+        4    0.000    0.000    0.004    0.001 _tqdm.py:401(__new__)
+       16    0.000    0.000    0.001    0.000 _weakrefset.py:58(__iter__)
+      339    0.000    0.000    0.000    0.000 {method 'acquire' of '_thread.RLock' objects}
+        1    0.000    0.000    0.003    0.003 utils.py:257(<listcomp>)
+        4    0.000    0.000    0.001    0.000 threading.py:757(__init__)
+      597    0.000    0.000    0.000    0.000 {built-in method builtins.chr}
+        1    0.000    0.000    0.001    0.001 cpu.py:54(<listcomp>)
+        1    0.000    0.000    0.001    0.001 cpu.py:28(drawTiles)
+        4    0.000    0.000    0.003    0.001 _monitor.py:31(__init__)
+     1148    0.000    0.000    0.000    0.000 {method 'replace' of 'str' objects}
+        4    0.000    0.000    0.001    0.000 threading.py:1024(join)
+       16    0.000    0.000    0.001    0.000 {method 'remove' of 'set' objects}
+        8    0.000    0.000    0.000    0.000 threading.py:215(__init__)
+        7    0.000    0.000    0.000    0.000 random.py:223(_randbelow)
+       12    0.000    0.000    0.000    0.000 _weakrefset.py:26(__exit__)
+       17    0.000    0.000    0.014    0.001 cpu.py:41(<genexpr>)
+        4    0.000    0.000    0.001    0.000 threading.py:263(wait)
+        1    0.000    0.000  607.186  607.186 {built-in method builtins.exec}
+        1    0.000    0.000    0.000    0.000 utils.py:44(skips)
+        4    0.000    0.000    0.001    0.000 threading.py:1062(_wait_for_tstate_lock)
+        4    0.000    0.000    0.001    0.000 threading.py:828(start)
+        4    0.000    0.000    0.000    0.000 {built-in method _thread.start_new_thread}
+      339    0.000    0.000    0.000    0.000 {method 'release' of '_thread.RLock' objects}
+        4    0.000    0.000    0.000    0.000 os.py:664(__getitem__)
+        4    0.000    0.000    0.000    0.000 _utils.py:129(__eq__)
+       12    0.000    0.000    0.000    0.000 _weakrefset.py:52(_commit_removals)
+      256    0.000    0.000    0.000    0.000 {method 'center' of 'str' objects}
+        4    0.000    0.000    0.001    0.000 threading.py:533(wait)
+        4    0.000    0.000    0.001    0.000 _tqdm.py:424(_get_free_pos)
+        1    0.000    0.000    0.000    0.000 utils.py:258(<listcomp>)
+        4    0.000    0.000    0.001    0.000 threading.py:512(set)
+        1    0.000    0.000    0.013    0.013 utils.py:256(getPlaces)
+        4    0.000    0.000    0.000    0.000 _tqdm.py:881(__del__)
+        8    0.000    0.000    0.000    0.000 threading.py:498(__init__)
+       12    0.000    0.000    0.000    0.000 <frozen importlib._bootstrap>:997(_handle_fromlist)
+        4    0.000    0.000    0.000    0.000 _utils.py:156(_supports_unicode)
+       12    0.000    0.000    0.000    0.000 _weakrefset.py:20(__enter__)
+        4    0.000    0.000    0.000    0.000 _tqdm.py:427(<genexpr>)
+        4    0.000    0.000    0.001    0.000 threading.py:357(notify_all)
+        1    0.000    0.000    0.001    0.001 utils.py:70(skips_formatted)
+       20    0.000    0.000    0.000    0.000 {method 'add' of 'set' objects}
+       12    0.000    0.000    0.000    0.000 {method 'release' of '_thread.lock' objects}
+        1    0.000    0.000  607.167  607.167 blueprint.py:33(pick)
+        4    0.000    0.000    0.000    0.000 {built-in method fcntl.ioctl}
+        4    0.000    0.000    0.000    0.000 _monitor.py:95(report)
+      2/1    0.000    0.000  607.167  607.167 {built-in method builtins.next}
+        1    0.000    0.000    0.000    0.000 blueprint.py:5(__init__)
+        4    0.000    0.000    0.000    0.000 _tqdm.py:174(status_printer)
+        1    0.000    0.000    0.015    0.015 cpu.py:39(displayBoard)
+        5    0.000    0.000    0.000    0.000 _weakrefset.py:38(_remove)
+        4    0.000    0.000    0.000    0.000 _tqdm.py:1115(<listcomp>)
+        5    0.000    0.000    0.000    0.000 {built-in method builtins.print}
+        9    0.000    0.000    0.000    0.000 utils.py:75(<genexpr>)
+        8    0.000    0.000    0.000    0.000 _weakrefset.py:81(add)
+       16    0.000    0.000    0.000    0.000 threading.py:506(is_set)
+        8    0.000    0.000    0.000    0.000 threading.py:1230(current_thread)
+        8    0.000    0.000    0.000    0.000 _tqdm.py:1094(fp_write)
+        8    0.000    0.000    0.000    0.000 threading.py:254(_is_owned)
+       12    0.000    0.000    0.000    0.000 _weakrefset.py:16(__init__)
+        8    0.000    0.000    0.000    0.000 _tqdm.py:893(_comparable)
+        4    0.000    0.000    0.000    0.000 threading.py:1136(daemon)
+       16    0.000    0.000    0.000    0.000 {built-in method builtins.hasattr}
+        4    0.000    0.000    0.001    0.000 _weakrefset.py:106(remove)
+        8    0.000    0.000    0.000    0.000 _tqdm.py:897(__hash__)
+        4    0.000    0.000    0.000    0.000 threading.py:727(_newname)
+        4    0.000    0.000    0.000    0.000 threading.py:966(_stop)
+        4    0.000    0.000    0.000    0.000 os.py:742(encode)
+        8    0.000    0.000    0.000    0.000 threading.py:239(__enter__)
+        4    0.000    0.000    0.000    0.000 _utils.py:163(_environ_cols_wrapper)
+        8    0.000    0.000    0.000    0.000 threading.py:242(__exit__)
+        4    0.000    0.000    0.000    0.000 _utils.py:142(_is_utf)
+        1    0.000    0.000    0.000    0.000 _bootlocale.py:23(getpreferredencoding)
+        4    0.000    0.000    0.000    0.000 threading.py:1120(daemon)
+        1    0.000    0.000    0.000    0.000 blueprint.py:9(setMoves)
+        4    0.000    0.000    0.000    0.000 threading.py:251(_acquire_restore)
+        4    0.000    0.000    0.000    0.000 threading.py:248(_release_save)
+        4    0.000    0.000    0.000    0.000 _weakrefset.py:67(__len__)
+        4    0.000    0.000    0.000    0.000 {method 'append' of 'collections.deque' objects}
+        5    0.000    0.000    0.000    0.000 {method 'discard' of 'set' objects}
+        1    0.000    0.000    0.000    0.000 codecs.py:185(__init__)
+        8    0.000    0.000    0.000    0.000 {method 'encode' of 'str' objects}
+       12    0.000    0.000    0.000    0.000 {built-in method _thread.allocate_lock}
+        8    0.000    0.000    0.000    0.000 {method '__enter__' of '_thread.lock' objects}
+       11    0.000    0.000    0.000    0.000 {method 'getrandbits' of '_random.Random' objects}
+        1    0.000    0.000    0.000    0.000 {built-in method _locale.nl_langinfo}
+        4    0.000    0.000    0.000    0.000 {built-in method __new__ of type object at 0x102458870}
+       12    0.000    0.000    0.000    0.000 {built-in method builtins.getattr}
+        8    0.000    0.000    0.000    0.000 {built-in method builtins.id}
+        8    0.000    0.000    0.000    0.000 {built-in method _thread.get_ident}
+        4    0.000    0.000    0.000    0.000 {method 'difference' of 'set' objects}
+       12    0.000    0.000    0.000    0.000 {built-in method builtins.abs}
+        1    0.000    0.000    0.000    0.000 {built-in method builtins.iter}
+        4    0.000    0.000    0.000    0.000 {method 'remove' of 'collections.deque' objects}
+        1    0.000    0.000    0.000    0.000 {method 'insert' of 'list' objects}
+        1    0.000    0.000    0.000    0.000 {method 'items' of 'dict' objects}
+        8    0.000    0.000    0.000    0.000 {method '__exit__' of '_thread.lock' objects}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        7    0.000    0.000    0.000    0.000 {method 'bit_length' of 'int' objects}
+        4    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+        4    0.000    0.000    0.000    0.000 {method 'locked' of '_thread.lock' objects}
+
+
