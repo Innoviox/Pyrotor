@@ -1,5 +1,5 @@
 import cpu.cpu as cpu
-from cpu import WeightedScorer
+from cpu import WeightedScorer, Board
 import tabulate as tb
 import time
 pos = lambda r, c: "ABCDEFGHIJKLMNO"[c - 1] + str(r)
@@ -38,6 +38,32 @@ def main(w1, w2, f, racks=None):
         ss.append(c.score)
         write_state_to_file(c, ms, rs, ts, ss, file=f)
 
+def two_player_game(w1, w2, f):
+    b = Board()
+    p1 = cpu.CPU(strategy=WeightedScorer, bl_args=[w1, w2], board=b)
+    p2 = cpu.CPU(strategy=WeightedScorer, bl_args=[w1, w2], board=b)
+    ms = []
+    rs = []
+    ts = []
+    ss = []
+    while True:
+        for p in [p1, p2]:
+            rs.append(''.join(p.rack))
+            t = time.time()
+            ms.append(p.run())
+            ts.append(round(time.time() - t, 2))
+            ss.append(p.score)
+            write_state_to_file(p, ms, rs, ts, ss, file=f)
+
+            p1.board = ms[-1].board
+            p2.board = ms[-1].board
+
+            p1.distribution = p.distribution
+            p2.distribution = p.distribution
+
+            if not p.distribution:
+                if not (p1.rack and p2.rack):
+                    return
 # racks = map(list, ["ABCDEFG", "FHRUAPO", "BURIFOW", "ROGHCPA", "RUGNVPE", "SATIENT"])
 # main(1, 1, "fb.txt", racks=iter(racks))
 import os
@@ -46,14 +72,14 @@ def testweights():
 
     args = [[random() * 4, random() * 4] for i in range(1000)]
     # args = [[1, i / 10] for i in range(16, 510)]
-    for w1, w2 in args:
-        d = "cpu-testing-israel {} {}".format(round(w1, 4), round(w2, 4))
+    for w1, w2 in [[1, 1]]:#args:
+        d = "cpu-testing-two-players {} {}".format(round(w1, 4), round(w2, 4))
         os.mkdir(d)
         os.chdir(d)
         for i in range(100):
             print(i)
             try:
-                main(w1, w2, "run{}.txt".format(i))
+                two_player_game(w1, w2, "run{}.txt".format(i))
             except Exception as e:
                 print(e)
         os.chdir("..")

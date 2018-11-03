@@ -8,8 +8,8 @@ import copy
 from tqdm import tqdm
 
 class CPU():
-    def __init__(self, strategy=BlueprintBase, bl_args=[]):
-        self.board = Board()
+    def __init__(self, strategy=BlueprintBase, bl_args=[], board=Board()):
+        self.board = board
 
         self.rack = []
         self.distribution = distribution[:]
