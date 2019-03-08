@@ -13,7 +13,7 @@ def write_state_to_file(c, moves, racks, times, scores, file='run.txt'):
         t.append([cpu.skips_formatted(m), score(m, scores[i-1]), val(m,c), pos(m.row, m.col), racks[i-1], times[i-1]])
     s += tb.tabulate(t,headers=h,showindex=range(1,len(t)+1))#,tablefmt="fancy_grid")
     s+='\n'
-    s += c.displayBoard(c.board)
+    s += c.displayBoard(c.board, out=False)
     f = open(file,'w',encoding='utf-8')
     f.write(s)
     f.close()
@@ -33,7 +33,9 @@ def main(w1, w2, f, racks=None):
 
         rs.append(''.join(c.rack))
         t=time.time()
-        ms.append(c.run())
+        # ms.append(c.run())
+        for move in c.pick_n(5):
+            print(move)
         ts.append(round(time.time()-t, 2))
         ss.append(c.score)
         write_state_to_file(c, ms, rs, ts, ss, file=f)
@@ -64,8 +66,9 @@ def two_player_game(w1, w2, f):
             if not p.distribution:
                 if not (p1.rack and p2.rack):
                     return
-# racks = map(list, ["ABCDEFG", "FHRUAPO", "BURIFOW", "ROGHCPA", "RUGNVPE", "SATIENT"])
-# main(1, 1, "fb.txt", racks=iter(racks))
+racks = map(list, ["EOSWERS"])
+main(1, 1, "game.txt", racks=iter(racks))
+input()
 import os
 def testweights():
     from random import random

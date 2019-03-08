@@ -36,11 +36,11 @@ class CPU():
             if self.checkWord(word):
                 yield word
 
-    def displayBoard(self, board):
+    def displayBoard(self, board, out=True):
         s="{bar}\n{sep}\n".format(bar="|",sep="-"*66)
         text=s+s.join(''.join('|'+c.center(4 if j == 0 else 3) for j, c in enumerate(r)) for r in board) + s
         text = text[2:-1]
-        print(text)
+        if out: print(text)
         return text
 
     def generate(self):
@@ -51,7 +51,7 @@ class CPU():
         for (d, row) in tqdm(list(enumerate(self.board.board[1:])), desc="Scanning rows"):
             yield from self.complete(self.slotify(row[1:]), 'A', d+1, words)
 
-        for (d, col) in tqdm(list(enumerate([[row[i] for row in self.board.board[1:]] for i in range(len(self.board.board))])), desc="Scanning cols"):
+        for (d, col) in tqdm(list(enumerate([[row[i] for row in self.board.board[1:]] for i in range(1, len(self.board.board))])), desc="Scanning cols"):
             yield from self.complete(self.slotify(col), 'D', d, words)
 
     def _gen_flat(self):

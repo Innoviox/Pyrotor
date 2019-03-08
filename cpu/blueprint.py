@@ -30,6 +30,7 @@ class BlueprintBase():
         #return None
         #return sorted(self.moves, key=lambda i:-self.score(i))
 
+
     def pick(self):
         return next(self.pick_n(1))
 
@@ -39,7 +40,7 @@ class BlueprintBase():
             yield next(pick_iter)
 
     def pick_iter(self):
-        return iter(self._pick())
+        return iter(sorted(tqdm(list(self.moves), desc="Analyzing"), key=lambda i:-self.score(i)))
 
     def assureAttrs(self, move):
         try:

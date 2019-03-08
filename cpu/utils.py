@@ -15,20 +15,20 @@ subdicts = {diphth: set(open("cpu/resources/" + diphth + ".txt").read().split())
 
 regBoard=[[" ", "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K ", "L ", "M ", "N ", "O "],
             ['01', 'TWS', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'TWS', ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   'TWS'],
-            ['02', ' ',   'DWS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'DWS', ' '],
-            ['03', ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   'DLS', ' ',   'DLS', ' ',   ' ',   ' ',   'DWS', ' ',   ' '],
-            ['04', 'DLS', ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   'DLS'],
-            ['05', ' ',   ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   ' '],
-            ['06', ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' '],
-            ['07', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'DLS', ' ',   'DLS', ' ',   ' ',   ' ',   'DLS', ' ',   ' '],
-            ['08', 'TWS', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   '*',   ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   'TWS'],
-            ['09', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'DLS', ' ',   'DLS', ' ',   ' ',   ' ',   'DLS', ' ',   ' '],
-            ['10', ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' '],
-            ['11', ' ',   ' ',   ' ',   ' ',   'DWS'  , ' ', ' ',   ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   ' '],
-            ['12', 'DLS', ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   'DLS'],
-            ['13', ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   'DLS', ' ',   'DLS', ' ',   ' ',   ' ',   'DWS', ' ',   ' '],
-            ['14', ' ',   'DWS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'DWS', ' '],
-            ['15', 'TWS', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'TWS', ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   'TWS']]
+            ['02', ' ',   'DWS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   'I',   ' ',   'DWS', ' '],
+            ['03', ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   'DLS', ' ',   'DLS', ' ',   ' ',   'O',   'DWS', ' ',   ' '],
+            ['04', 'DLS', ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'L',   ' ',   ' ',   'DLS'],
+            ['05', ' ',   ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   ' ',   ' ',   'DWS', 'I',   ' ',   ' ',   ' '],
+            ['06', ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   'T',   ' ',   'TLS', ' '],
+            ['07', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'DLS', ' ',   'J',   'U',   'T',   'E',   'DLS', ' ',   ' '],
+            ['08', 'TWS', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'Q',   'I',   'S',   ' ',   'DLS', ' ',   ' ',   'TWS'],
+            ['09', ' ',   ' ',   'DLS', ' ',   ' ',   'L',   'O',   'I',   'N',   ' ',   ' ',   ' ',   'DLS', ' ',   ' '],
+            ['10', ' ',   'TLS', ' ',   ' ',   'A',   'I',   'D',   'S',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' '],
+            ['11', ' ',   ' ',   ' ',   'H',   'A',   'E',   ' ',   ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   ' '],
+            ['12', 'DLS', ' ',   ' ',   'O',   ' ',   'D',   ' ',   'DLS', ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   'DLS'],
+            ['13', ' ',   'F',   'A',   'Y',   ' ',   ' ',   'DLS', ' ',   'DLS', ' ',   ' ',   ' ',   'DWS', ' ',   ' '],
+            ['14', ' ',   'R',   ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'DWS', ' '],
+            ['15', 'TWS', 'Y',   ' ',   'DLS', ' ',   ' ',   ' ',   'TWS', ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   'TWS']]
 regCC = [[string.ascii_uppercase for i in range(16)] for j in range(16)]
 
 extraList=["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", \
@@ -104,7 +104,9 @@ class Move():
         self.valuation = leavesDict[''.join(i for i in sorted(nR))]
         return self.valuation
     def __repr__(self):
-        return ", ".join(str(i) for i in (skips_formatted(self), self.score, self.valuation, self.row, self.col)) + "\n"
+        # string.ascii_uppercase[self.row - 1] + str(self.col) + " " +
+        return skips_formatted(self) + " " + str(self.score) + f" ({self.score + self.valuation})"
+        # return "".join(str(i) for i in (string.ascii_uppercase[self.row]skips_formatted(self), self.score, self.valuation, self.row, self.col)) # + "\n"
     
 class Board():
     def __init__(self, board=None, crosschecks=None):
