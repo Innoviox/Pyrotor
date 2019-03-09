@@ -1,5 +1,5 @@
 import cpu.cpu as cpu
-from cpu import WeightedScorer, Board
+from cpu import WeightedScorer, Board, readBoard
 import tabulate as tb
 import time
 pos = lambda r, c: "ABCDEFGHIJKLMNO"[c - 1] + str(r)
@@ -19,7 +19,9 @@ def write_state_to_file(c, moves, racks, times, scores, file='run.txt'):
     f.close()
 
 def main(w1, w2, f, racks=None):
+    readBoard()
     c = cpu.CPU(strategy=WeightedScorer, bl_args=[w1, w2])
+    c.displayBoard(c.board)
     ms=[]
     rs=[]
     ts=[]
@@ -33,7 +35,6 @@ def main(w1, w2, f, racks=None):
 
         rs.append(''.join(c.rack))
         t=time.time()
-        # ms.append(c.run())
         for move in c.pick_n(5):
             print(move)
         ts.append(round(time.time()-t, 2))
@@ -66,9 +67,28 @@ def two_player_game(w1, w2, f):
             if not p.distribution:
                 if not (p1.rack and p2.rack):
                     return
-racks = map(list, ["EOSWERS"])
-main(1, 1, "game.txt", racks=iter(racks))
-input()
+# racks = map(list, [input("Rack: ").upper()])
+# main(1, 1, "game.txt", racks=iter(racks))
+# input()
+
+def playGame():
+    readBoard()
+    c = cpu.CPU(strategy=WeightedScorer, bl_args=[1, 1])
+    while True:
+        rack = list(input("Rack: ").upper())
+        c.rack = rack
+        print(c.board)
+        moves = list(c.pick_n(5))
+        for i, suggest in enumerate(moves, start=1):
+            print(f"Move {i}:", suggest)
+        choice = input("Choose move: ")
+        if choice == "other":
+            readBoard(b=c.board)
+        else:
+            move = moves[int(choice) - 1]
+            c.board = move.board.clone()
+        readBoard(b=c.board)
+playGame()
 import os
 def testweights():
     from random import random

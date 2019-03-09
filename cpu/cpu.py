@@ -1,5 +1,5 @@
 from .blueprint import BlueprintBase
-from .utils import Move, Board, distribution, skips_formatted, insert, minmax
+from .utils import Move, Board, distribution, skips_formatted, insert, minmax, readBoard
 import random
 import string
 import itertools

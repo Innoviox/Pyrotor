@@ -5,6 +5,7 @@ import time
 import random
 import timeit
 
+pos = lambda r, c: "ABCDEFGHIJKLMNO"[c - 1] + str(r)
 leaves = open("cpu/resources/leaves.txt").read().split()
 leavesDict = {leaves[i]:float(leaves[i+1]) for i in range(0, len(leaves), 2)}
 leavesDict[''] = 0
@@ -13,22 +14,6 @@ diphths = [["".join(i) for i in itertools.permutations(list(string.ascii_upperca
 subdicts = {diphth: set(open("cpu/resources/" + diphth + ".txt").read().split()) \
                          for diphth in diphths}
 
-regBoard=[[" ", "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K ", "L ", "M ", "N ", "O "],
-            ['01', 'TWS', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'TWS', ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   'TWS'],
-            ['02', ' ',   'DWS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   'I',   ' ',   'DWS', ' '],
-            ['03', ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   'DLS', ' ',   'DLS', ' ',   ' ',   'O',   'DWS', ' ',   ' '],
-            ['04', 'DLS', ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'L',   ' ',   ' ',   'DLS'],
-            ['05', ' ',   ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   ' ',   ' ',   'DWS', 'I',   ' ',   ' ',   ' '],
-            ['06', ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   'T',   ' ',   'TLS', ' '],
-            ['07', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'DLS', ' ',   'J',   'U',   'T',   'E',   'DLS', ' ',   ' '],
-            ['08', 'TWS', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'Q',   'I',   'S',   ' ',   'DLS', ' ',   ' ',   'TWS'],
-            ['09', ' ',   ' ',   'DLS', ' ',   ' ',   'L',   'O',   'I',   'N',   ' ',   ' ',   ' ',   'DLS', ' ',   ' '],
-            ['10', ' ',   'TLS', ' ',   ' ',   'A',   'I',   'D',   'S',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' '],
-            ['11', ' ',   ' ',   ' ',   'H',   'A',   'E',   ' ',   ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   ' '],
-            ['12', 'DLS', ' ',   ' ',   'O',   ' ',   'D',   ' ',   'DLS', ' ',   ' ',   ' ',   'DWS', ' ',   ' ',   'DLS'],
-            ['13', ' ',   'F',   'A',   'Y',   ' ',   ' ',   'DLS', ' ',   'DLS', ' ',   ' ',   ' ',   'DWS', ' ',   ' '],
-            ['14', ' ',   'R',   ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'DWS', ' '],
-            ['15', 'TWS', 'Y',   ' ',   'DLS', ' ',   ' ',   ' ',   'TWS', ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   'TWS']]
 regBoard=[[" ", "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K ", "L ", "M ", "N ", "O "],
             ['01', 'TWS', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'TWS', ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   'TWS'],
             ['02', ' ',   'DWS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'DWS', ' '],
@@ -45,6 +30,32 @@ regBoard=[[" ", "A ", "B ", "C ", "D ", "E ", "F ", "G ", "H ", "I ", "J ", "K "
             ['13', ' ',   ' ',   'DWS', ' ',   ' ',   ' ',   'DLS', ' ',   'DLS', ' ',   ' ',   ' ',   'DWS', ' ',   ' '],
             ['14', ' ',   'DWS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'TLS', ' ',   ' ',   ' ',   'DWS', ' '],
             ['15', 'TWS', ' ',   ' ',   'DLS', ' ',   ' ',   ' ',   'TWS', ' ',   ' ',   ' ',   'DLS', ' ',   ' ',   'TWS']]
+
+specMap = {'@': 'TWS', '#': 'DWS', '+': 'TLS', '-': 'DLS', '.': ' '} #, '*': '*'}
+mapSpec = {i: j for j, i in specMap.items()}
+def readBoard(b=regBoard):
+    print("Reading board")
+    a = [[i for i in k[:]] for k in b[:]]
+    for i in range(1, 16):
+        line = input().upper()
+        # assert len(line) == 15
+        b[i][0] = str(i).zfill(2)
+        for k, j in enumerate(line, start=1):
+            if j == ' ':
+                pass # space means keep same as normal
+            elif j in specMap:
+                b[i][k] = specMap[j]
+            else:
+                b[i][k] = j
+        print(''.join(mapSpec[q] if q in mapSpec else q for q in b[i]))
+    print(str(Board(board=b)))
+    k = input("Correct? ")
+    if k == "no":
+        print(Board(board=b).simpleString())
+        return readBoard(b=a)
+    return b
+
+
 
 regCC = [[string.ascii_uppercase for i in range(16)] for j in range(16)]
 
@@ -122,7 +133,7 @@ class Move():
         return self.valuation
     def __repr__(self):
         # string.ascii_uppercase[self.row - 1] + str(self.col) + " " +
-        return skips_formatted(self) + " " + str(self.score) + f" ({self.score + self.valuation})"
+        return pos(self.row, self.col) + self.direction + ("R" if self.rwws else "") + " " + skips_formatted(self) + " " + str(self.score) + f" ({self.score + self.valuation})"
         # return "".join(str(i) for i in (string.ascii_uppercase[self.row]skips_formatted(self), self.score, self.valuation, self.row, self.col)) # + "\n"
     
 class Board():
@@ -422,6 +433,17 @@ class Board():
 
     def __getitem__(self, idx):
         return self.board[idx]
+
+    def __str__(self):
+        s = "{bar}\n{sep}\n".format(bar="|", sep="-" * 66)
+        text = s + s.join(''.join('|' + c.center(4 if j == 0 else 3) for j, c in enumerate(r)) for r in self.board) + s
+        text = text[2:-1]
+        return text
+
+    def simpleString(self):
+        s = '\n'.join(''.join(mapSpec.get(i, i) for i in row[1:]) for row in self.board[1:])
+        return s
+
 
 def checkWord(word):
         # word = word.upper()
