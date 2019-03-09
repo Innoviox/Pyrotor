@@ -6,6 +6,29 @@ import itertools
 import sys
 import copy
 from tqdm import tqdm
+import threading
+
+class threadsafe_iter:
+    """Takes an iterator/generator and makes it thread-safe by
+    serializing call to the `next` method of given iterator/generator.
+    """
+    def __init__(self, it):
+        self.it = it
+        self.lock = threading.Lock()
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        with self.lock:
+            return self.it.next()
+
+def threadsafe_generator(f):
+    """A decorator that takes a generator function and makes it thread-safe.
+    """
+    def g(*a, **kw):
+        return threadsafe_iter(f(*a, **kw))
+    return g
 
 class CPU():
     def __init__(self, strategy=BlueprintBase, bl_args=[], board=Board()):
@@ -24,6 +47,9 @@ class CPU():
         self.bl_args = bl_args
         self.strategy = None
         self.name = "CPU"
+
+        self.moves = []
+        self.lock = threading.Lock()
 
     def drawTiles(self):
         while len(self.rack)<7 and len(self.distribution)>0:
@@ -44,15 +70,27 @@ class CPU():
         return text
 
     def generate(self):
-        yield from self._gen_flat()
+        # yield from self._gen_flat()
+        threads = []
+        threads.append(threading.Thread(target=self._gen_flat))
 
         words = self.board.removeDuplicates(self.gac(self.rack, 7))
 
-        for (d, row) in tqdm(list(enumerate(self.board.board[1:])), desc="Scanning rows"):
-            yield from self.complete(self.slotify(row[1:]), 'A', d+1, words)
+        for (d, row) in list(enumerate(self.board.board[1:])): #tqdm(list(enumerate(self.board.board[1:])), desc="Scanning rows"):
+            # yield from self.complete(self.slotify(row[1:]), 'A', d+1, words)
+            threads.append(threading.Thread(target=self.complete, args=(self.slotify(row[1:]), 'A', d+1, words)))
 
-        for (d, col) in tqdm(list(enumerate([[row[i] for row in self.board.board[1:]] for i in range(1, len(self.board.board))])), desc="Scanning cols"):
-            yield from self.complete(self.slotify(col), 'D', d, words)
+        for (d, col) in list(enumerate([[row[i] for row in self.board.board[1:]] for i in range(1, len(self.board.board))])):  #tqdm(list(enumerate([[row[i] for row in self.board.board[1:]] for i in range(1, len(self.board.board))])), desc="Scanning cols"):
+            # yield from self.complete(self.slotify(col), 'D', d, words)
+            threads.append(threading.Thread(target=self.complete, args=(self.slotify(col), 'D', d, words)))
+
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        yield from self.moves
+
+
 
     def _gen_flat(self):
         prevBoard = self.board.clone()
@@ -73,20 +111,22 @@ class CPU():
                 neighbors.append((r, c - 1))
             neighbors = self.board.removeDuplicates(neighbors)
             # neighbors = minmax(neighbors)
-        for word in tqdm(words, desc="Generating moves"):
+        for word in words: # tqdm(words, desc="Generating moves"):
             for neighbor in neighbors:
                 rIndex, cIndex = neighbor
                 for direc in ['A', 'D']:
                     newBoard = self.board.clone()
                     if self.playWord(word, rIndex, cIndex, direc, newBoard):
                         play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, self.rack)
-                        yield play
+                        with self.lock: self.moves.append(play)
+                        # yield play
                         continue
 
                     newBoard = self.board.clone()
                     if self.playWordOpp(word, rIndex, cIndex, direc, newBoard):
                         play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, self.rack, revWordWhenScoring=False)
-                        yield play
+                        with self.lock: self.moves.append(play)
+                        # yield play
 
     def proxyBoard(self):
         return Board(copy.deepcopy(self.board.board))
@@ -178,7 +218,8 @@ class CPU():
                 l = len(word)
                 for pos in range(edgeFinder[0], edgeFinder[-1]+l+2):
                     if pos-l in range(15) and slotForLen[pos-l] == '.':
-                        yield self.place(slot, pos-l, word, direc, depth)
+                        # yield self.place(slot, pos-l, word, direc, depth)
+                        with self.lock: self.moves.append(self.place(slot, pos-l, word, direc, depth))
 
         #return newSlots
 

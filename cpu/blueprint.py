@@ -40,7 +40,7 @@ class BlueprintBase():
             yield next(pick_iter)
 
     def pick_iter(self):
-        return iter(sorted(tqdm(list(self.moves), desc="Analyzing"), key=lambda i:-self.score(i)))
+        return iter(sorted(list(self.moves), key=lambda i:-self.score(i)))
 
     def assureAttrs(self, move):
         try:
