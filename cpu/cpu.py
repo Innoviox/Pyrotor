@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from .blueprint import BlueprintBase
 from .utils import Move, Board, distribution, skips_formatted, insert, minmax, readBoard
 import random
@@ -7,28 +9,31 @@ import sys
 import copy
 from tqdm import tqdm
 import threading
+import queue
+from functools import wraps
+from multiprocessing import Pool
+from threading import Thread
+_DEFAULT_POOL = ThreadPoolExecutor()
 
-class threadsafe_iter:
-    """Takes an iterator/generator and makes it thread-safe by
-    serializing call to the `next` method of given iterator/generator.
-    """
-    def __init__(self, it):
-        self.it = it
-        self.lock = threading.Lock()
+def threadpool(f, executor=None):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        return (executor or _DEFAULT_POOL).submit(f, *args, **kwargs)
 
-    def __iter__(self):
-        return self
+    return wrap
 
-    def next(self):
-        with self.lock:
-            return self.it.next()
-
-def threadsafe_generator(f):
-    """A decorator that takes a generator function and makes it thread-safe.
-    """
-    def g(*a, **kw):
-        return threadsafe_iter(f(*a, **kw))
-    return g
+class ThreadWithReturnValue(Thread):
+    def __init__(self, group=None, target=None, name=None,
+                 args=(), kwargs={}, Verbose=None):
+        Thread.__init__(self, group, target, name, args, kwargs)
+        self._return = None
+    def run(self):
+        if self._target is not None:
+            self._return = self._target(*self._args,
+                                                **self._kwargs)
+    def join(self, *args):
+        Thread.join(self, *args)
+        return self._return
 
 class CPU():
     def __init__(self, strategy=BlueprintBase, bl_args=[], board=Board()):
@@ -48,8 +53,9 @@ class CPU():
         self.strategy = None
         self.name = "CPU"
 
-        self.moves = []
+        self.moves = queue.Queue()
         self.lock = threading.Lock()
+
 
     def drawTiles(self):
         while len(self.rack)<7 and len(self.distribution)>0:
@@ -70,29 +76,56 @@ class CPU():
         return text
 
     def generate(self):
-        # yield from self._gen_flat()
+        # moves = self._gen_flat()
         threads = []
-        threads.append(threading.Thread(target=self._gen_flat))
-
+        moves = queue.Queue()
+        # threads.append(self._gen_flat())
+        threads.append(threading.Thread(target=self._gen_flat, args=(moves,)))
+        # gf = ThreadWithReturnValue(target=self._gen_flat)
+        # gf.start()
         words = self.board.removeDuplicates(self.gac(self.rack, 7))
-
+        args = []
         for (d, row) in list(enumerate(self.board.board[1:])): #tqdm(list(enumerate(self.board.board[1:])), desc="Scanning rows"):
             # yield from self.complete(self.slotify(row[1:]), 'A', d+1, words)
-            threads.append(threading.Thread(target=self.complete, args=(self.slotify(row[1:]), 'A', d+1, words)))
-
+            threads.append(threading.Thread(target=self.complete, args=(moves, self.slotify(row[1:]), 'A', d+1, words)))
+            # threads.append(self.complete(self.slotify(row[1:]), 'A', d+1, words))
+            # args.append([self.slotify(row[1:]), 'A', d+1, words])
         for (d, col) in list(enumerate([[row[i] for row in self.board.board[1:]] for i in range(1, len(self.board.board))])):  #tqdm(list(enumerate([[row[i] for row in self.board.board[1:]] for i in range(1, len(self.board.board))])), desc="Scanning cols"):
             # yield from self.complete(self.slotify(col), 'D', d, words)
-            threads.append(threading.Thread(target=self.complete, args=(self.slotify(col), 'D', d, words)))
+            threads.append(threading.Thread(target=self.complete, args=(moves, self.slotify(col), 'D', d, words)))
+            # threads.append(self.complete(self.slotify(col), 'D', d, words))
+            # args.append([self.slotify(col), 'D', d, words])
+        # moves = []
+        # p = Pool(processes=30)
+        # for i in p.imap_unordered(self._complete, args):
+        #     yield from i
+        # yield from gf.join()
 
+        #
         for t in threads:
             t.start()
         for t in threads:
             t.join()
-        yield from self.moves
+        yield from moves.queue
+        # yield from [i for t in threads for i in t.result()]
+# """FAT AXED
+#  TOAD
+#    LOON     G
+#    I PUB    L
+#    EN NOISY U
+#    NET   H WE
+#     GO  QI U
+#      L RAVED
+#      E  TAV
+#   NOISE  HI   K
+#           C  SI
+#        WALTZ E
+#           SANER
+#              PA
+#               J"""
 
-
-
-    def _gen_flat(self):
+    # @threadpool
+    def _gen_flat(self, queue):
         prevBoard = self.board.clone()
         words = self.board.removeDuplicates(self.gacc(self.rack, len(self.rack)))
         places = self.board.getPlaces(self.board.board)
@@ -111,6 +144,8 @@ class CPU():
                 neighbors.append((r, c - 1))
             neighbors = self.board.removeDuplicates(neighbors)
             # neighbors = minmax(neighbors)
+
+        moves = []
         for word in words: # tqdm(words, desc="Generating moves"):
             for neighbor in neighbors:
                 rIndex, cIndex = neighbor
@@ -118,15 +153,22 @@ class CPU():
                     newBoard = self.board.clone()
                     if self.playWord(word, rIndex, cIndex, direc, newBoard):
                         play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, self.rack)
-                        with self.lock: self.moves.append(play)
+                        # with self.lock: self.moves.append(play)
+                        # # self.moves.put(play)
                         # yield play
+                        moves.append(play)
                         continue
 
                     newBoard = self.board.clone()
                     if self.playWordOpp(word, rIndex, cIndex, direc, newBoard):
                         play = Move(word, newBoard, rIndex, cIndex, direc, prevBoard, self.rack, revWordWhenScoring=False)
-                        with self.lock: self.moves.append(play)
+                        # with self.lock: self.moves.append(play)
+                        self.moves.put(play)
                         # yield play
+                        moves.append(play)
+        # return moves
+        for m in moves:
+            queue.put(m)
 
     def proxyBoard(self):
         return Board(copy.deepcopy(self.board.board))
@@ -208,9 +250,13 @@ class CPU():
             return move
         return False
 
-    def complete(self, slot, direc, depth, words):
+    def _complete(self, args):
+        return self.complete(*args)
+    # @threadpool
+    def complete(self, queue, slot, direc, depth, words):
         if depth==0:
             return []
+        moves = []
         slotForLen = slot[0]
         if slotForLen != '...............':
             edgeFinder = [i for i, j in enumerate(slotForLen) if j != '.']
@@ -219,7 +265,11 @@ class CPU():
                 for pos in range(edgeFinder[0], edgeFinder[-1]+l+2):
                     if pos-l in range(15) and slotForLen[pos-l] == '.':
                         # yield self.place(slot, pos-l, word, direc, depth)
-                        with self.lock: self.moves.append(self.place(slot, pos-l, word, direc, depth))
+                        # with self.lock: self.moves.append(self.place(slot, pos-l, word, direc, depth))
+                        # self.moves.put(self.place(slot, pos-l, word, direc, depth))
+                        moves.append(self.place(slot, pos-l, word, direc, depth))
+        for m in moves:
+            queue.put(m)
 
         #return newSlots
 

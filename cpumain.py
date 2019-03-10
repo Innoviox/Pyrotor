@@ -2,6 +2,7 @@ import cpu.cpu as cpu
 from cpu import WeightedScorer, Board, readBoard
 import tabulate as tb
 import time
+import sys
 pos = lambda r, c: "ABCDEFGHIJKLMNO"[c - 1] + str(r)
 score = lambda m, c: '+{:>3}/{:>3}'.format(m.score, c)
 val = lambda m, c: '{:0>3.2f}'.format(c.strategy.score(m))
@@ -88,7 +89,11 @@ def playGame():
             move = moves[int(choice) - 1]
             c.board = move.board.clone()
         readBoard(b=c.board)
-playGame()
+# playGame()
+c = cpu.CPU()
+# readBoard(b=c.board)
+c.run()
+sys.exit()
 import os
 def testweights():
     from random import random
