@@ -90,7 +90,7 @@ def playGame():
         readBoard(b=c.board)
 # playGame()
 c = cpu.CPU()
-c.rack = list(["RIEMEDO"])
+c.rack = list("RIEMEDO")
 c.run()
 import sys
 sys.exit()
