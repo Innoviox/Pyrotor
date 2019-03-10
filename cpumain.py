@@ -92,6 +92,7 @@ def playGame():
 # playGame()
 c = cpu.CPU()
 # readBoard(b=c.board)
+c.rack=list("RIEMEDO")
 c.run()
 sys.exit()
 import os

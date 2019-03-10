@@ -151,7 +151,9 @@ class Move():
         # string.ascii_uppercase[self.row - 1] + str(self.col) + " " +
         return pos(self.row, self.col) + self.direction + ("R" if self.rwws else "") + " " + skips_formatted(self) + " " + str(self.score) + f" ({self.score + self.valuation})"
         # return "".join(str(i) for i in (string.ascii_uppercase[self.row]skips_formatted(self), self.score, self.valuation, self.row, self.col)) # + "\n"
-    
+    def __lt__(self, other):
+        return self.score + self.valuation > other.score + other.valuation
+
 class Board():
     def __init__(self, board=None, crosschecks=None):
         if board is None:

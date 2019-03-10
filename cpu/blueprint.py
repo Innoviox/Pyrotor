@@ -7,20 +7,23 @@ class BlueprintBase():
         self.rack = rack
        
     def setMoves(self, moves):
-        self.moves = filter(bool, moves)
+        self.moves = moves
+        # self.moves = filter(bool, [j for i in moves for j in i])
 		
     def _pick(self):
         bestMove = None
         #a=0
         #t_=0
         bestScore = 0
-        m = list(self.moves)
-        for move in tqdm(m, desc="Analyzing"):
+        # m = self.moves
+        # for move in tqdm(m, desc="Analyzing"):
+        for m_ in self.moves:
             #t=time()
-            ms = self.score(move)
-            if ms > bestScore:
-                bestMove = move
-                bestScore = ms
+            for move in m_:
+                ms = self.score(move)
+                if ms > bestScore:
+                    bestMove = move
+                    bestScore = ms
             #t_+=time()-t
             #a+=1
         #t_/=a
@@ -35,12 +38,13 @@ class BlueprintBase():
         return next(self.pick_n(1))
 
     def pick_n(self, n):
-        pick_iter = self.pick_iter()
+        # pick_iter = self.pick_iter()
         for i in range(n):
-            yield next(pick_iter)
+            yield self.moves.get()
 
     def pick_iter(self):
-        return iter(sorted(list(self.moves), key=lambda i:-self.score(i)))
+        # return iter(sorted(list(self.moves), key=lambda i:-self.score(i)))
+        return iter(self.moves.queue)
 
     def assureAttrs(self, move):
         try:
