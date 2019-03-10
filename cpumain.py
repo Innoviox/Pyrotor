@@ -88,7 +88,12 @@ def playGame():
             move = moves[int(choice) - 1]
             c.board = move.board.clone()
         readBoard(b=c.board)
-playGame()
+# playGame()
+c = cpu.CPU()
+c.rack = list(["RIEMEDO"])
+c.run()
+import sys
+sys.exit()
 import os
 def testweights():
     from random import random
