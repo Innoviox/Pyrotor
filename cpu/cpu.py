@@ -45,11 +45,14 @@ class CPU():
 
         self.BlueprintCreator = strategy
         self.bl_args = bl_args
-        self.strategy = None
+        # self.strategy = None
         self.name = "CPU"
 
         self.moves = queue.Queue()
-        # self.lock = threading.Lock()
+        self.lock = threading.Lock()
+        self.best_eval, self.best_move = -1000, None
+
+        self.strategy = self.BlueprintCreator(moves=None, rack=None, *self.bl_args)
 
 
     def drawTiles(self):
@@ -72,31 +75,27 @@ class CPU():
 
     def generate(self):
         self.moves = queue.PriorityQueue()
-
+        self.best_eval, self.best_move = -1000, None
         threads = []
 
-        # flat = threading.Thread(target=self._gen_flat, args=(self.moves,))
         threads.append(threading.Thread(target=self._gen_flat, args=(self.moves,)))
 
         words = self.board.removeDuplicates(self.gac(self.rack, 7))
 
-        # args = []
         for (d, row) in list(enumerate(self.board.board[1:])):
             threads.append(threading.Thread(target=self.complete, args=(self.moves, self.slotify(row[1:]), 'A', d+1, words)))
-            # args.append((self.moves, self.slotify(row[1:]), 'A', d+1, words))
 
         for (d, col) in list(enumerate([[row[i] for row in self.board.board[1:]] for i in range(1, len(self.board.board))])):
             threads.append(threading.Thread(target=self.complete, args=(self.moves, self.slotify(col), 'D', d, words)))
-            # args.append((self.moves, self.slotify(col), 'D', d, words))
 
-        # p = Pool(31)
-        # p.map(self.complete, args)
         for t in threads:
             t.start()
         for t in threads:
             t.join()
-        # flat.start()
-        # flat.join()
+
+        # return self.moves
+        # return self.best_move
+        self.moves.put(self.best_move)
         return self.moves
 # FAT AXED
 #  TOAD
@@ -112,7 +111,7 @@ class CPU():
 #        WALTZ E
 #   BARMIER SANER
 #   IDEM N     PA
-#        T      J
+# FOG    T      J
 
 
     # @threadpool
@@ -137,6 +136,7 @@ class CPU():
             # neighbors = minmax(neighbors)
 
         moves = []
+        best_eval, best_move = -1000, None
         for word in words: # tqdm(words, desc="Generating self.moves"):
             for neighbor in neighbors:
                 rIndex, cIndex = neighbor
@@ -149,7 +149,11 @@ class CPU():
                         # with self.lock: self.self.moves.append(play)
                         # # self.self.moves.put(play)
                         # yield play
-                        moves.append(play)
+                        # moves.append(play)
+                        k = self.strategy.score(play)
+                        if k > best_eval:
+                            best_eval = k
+                            best_move = play
                         continue
 
                     newBoard = self.board.clone()
@@ -160,11 +164,20 @@ class CPU():
                         # with self.lock: self.self.moves.append(play)
                         # self.self.moves.put(play)
                         # yield play
-                        moves.append(play)
+                        # moves.append(play)
+                        k = self.strategy.score(play)
+                        if k > best_eval:
+                            best_eval = k
+                            best_move = play
         # return self.moves
         # queue.put(self.moves)
-        for m in moves:
-            queue.put(m)
+        # for m in moves:
+        #     queue.put(m)
+
+        with self.lock:
+            if best_eval > self.best_eval:
+                self.best_eval = best_eval
+                self.best_move = best_move
         # print("F", end='')
 
     def proxyBoard(self):
@@ -254,6 +267,7 @@ class CPU():
         if depth==0:
             return []
         moves = []
+        best_eval, best_move = -1000, None
         slotForLen = slot[0]
         if slotForLen != '...............':
             edgeFinder = [i for i, j in enumerate(slotForLen) if j != '.']
@@ -264,10 +278,21 @@ class CPU():
                         # yield self.place(slot, pos-l, word, direc, depth)
                         # with self.lock: self.self.moves.append(self.place(slot, pos-l, word, direc, depth))
                         # self.self.moves.put(self.place(slot, pos-l, word, direc, depth))
-                        moves.append(self.place(slot, pos-l, word, direc, depth))
-        for m in moves:
-            if m:
-                queue.put(m)
+                        # moves.append(self.place(slot, pos-l, word, direc, depth))
+                        play = self.place(slot, pos-l, word, direc, depth)
+                        if play:
+                            k = self.strategy.score(play)
+                            if k > best_eval:
+                                best_eval = k
+                                best_move = play
+
+        # for m in moves:
+        #     if m:
+        #         queue.put(m)
+        with self.lock:
+            if best_eval > self.best_eval:
+                self.best_eval = best_eval
+                self.best_move = best_move
         # print(direc, end='')
 
         #return newSlots

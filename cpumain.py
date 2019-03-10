@@ -91,12 +91,12 @@ def playGame():
             move = moves[int(choice) - 1]
             c.board = move.board.clone()
         readBoard(b=c.board)
-playGame()
-# c = cpu.CPU()
-# # readBoard(b=c.board)
-# c.rack=list("RIEMEDO")
-# c.run()
-# sys.exit()
+# playGame()
+c = cpu.CPU()
+# readBoard(b=c.board)
+c.rack=list("RIEMEDO")
+c.run()
+sys.exit()
 import os
 def testweights():
     from random import random

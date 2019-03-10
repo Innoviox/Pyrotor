@@ -2,7 +2,7 @@ from time import time
 from tqdm import tqdm
 
 class BlueprintBase():
-    def __init__(self, moves, rack):
+    def __init__(self, moves=None, rack=None):
         self.setMoves(moves)
         self.rack = rack
        
