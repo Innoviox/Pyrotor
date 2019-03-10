@@ -13,14 +13,9 @@ import queue
 from functools import wraps
 from multiprocessing import Pool
 from threading import Thread
-_DEFAULT_POOL = ThreadPoolExecutor()
+import logging
 
-def threadpool(f, executor=None):
-    @wraps(f)
-    def wrap(*args, **kwargs):
-        return (executor or _DEFAULT_POOL).submit(f, *args, **kwargs)
-
-    return wrap
+logger = logging.Logger("imalogger")
 
 class ThreadWithReturnValue(Thread):
     def __init__(self, group=None, target=None, name=None,
@@ -54,7 +49,7 @@ class CPU():
         self.name = "CPU"
 
         self.moves = queue.Queue()
-        self.lock = threading.Lock()
+        # self.lock = threading.Lock()
 
 
     def drawTiles(self):
@@ -79,20 +74,29 @@ class CPU():
         self.moves = queue.PriorityQueue()
 
         threads = []
+
+        # flat = threading.Thread(target=self._gen_flat, args=(self.moves,))
         threads.append(threading.Thread(target=self._gen_flat, args=(self.moves,)))
 
         words = self.board.removeDuplicates(self.gac(self.rack, 7))
 
+        # args = []
         for (d, row) in list(enumerate(self.board.board[1:])):
             threads.append(threading.Thread(target=self.complete, args=(self.moves, self.slotify(row[1:]), 'A', d+1, words)))
+            # args.append((self.moves, self.slotify(row[1:]), 'A', d+1, words))
 
         for (d, col) in list(enumerate([[row[i] for row in self.board.board[1:]] for i in range(1, len(self.board.board))])):
             threads.append(threading.Thread(target=self.complete, args=(self.moves, self.slotify(col), 'D', d, words)))
+            # args.append((self.moves, self.slotify(col), 'D', d, words))
 
+        # p = Pool(31)
+        # p.map(self.complete, args)
         for t in threads:
             t.start()
         for t in threads:
             t.join()
+        # flat.start()
+        # flat.join()
         return self.moves
 # FAT AXED
 #  TOAD
@@ -107,8 +111,9 @@ class CPU():
 #           C  SI
 #        WALTZ E
 #   BARMIER SANER
-#        N     PA
+#   IDEM N     PA
 #        T      J
+
 
     # @threadpool
     def _gen_flat(self, queue):

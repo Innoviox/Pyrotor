@@ -2,7 +2,6 @@ import cpu.cpu as cpu
 from cpu import WeightedScorer, Board, readBoard
 import tabulate as tb
 import time
-import sys
 pos = lambda r, c: "ABCDEFGHIJKLMNO"[c - 1] + str(r)
 score = lambda m, c: '+{:>3}/{:>3}'.format(m.score, c)
 val = lambda m, c: '{:0>3.2f}'.format(c.strategy.score(m))
@@ -79,10 +78,8 @@ def playGame():
         rack = list(input("Rack: ").upper())
         c.rack = rack
         print(c.board)
-        # moves = list(c.pick_n(5))
-        moves = list(c.generate().queue)
-
-        for i, suggest in enumerate(moves[:5], start=1):
+        moves = list(c.pick_n(5))
+        for i, suggest in enumerate(moves, start=1):
             print(f"Move {i}:", suggest)
         choice = input("Choose move: ")
         if choice == "other":
@@ -91,12 +88,12 @@ def playGame():
             move = moves[int(choice) - 1]
             c.board = move.board.clone()
         readBoard(b=c.board)
-playGame()
-# c = cpu.CPU()
-# # readBoard(b=c.board)
-# c.rack=list("RIEMEDO")
-# c.run()
-# sys.exit()
+# playGame()
+c = cpu.CPU()
+c.rack = list("RIEMEDO")
+c.run()
+import sys
+sys.exit()
 import os
 def testweights():
     from random import random
