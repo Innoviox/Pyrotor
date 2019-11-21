@@ -19,27 +19,22 @@ def write_state_to_file(c, moves, racks, times, scores, file='run.txt'):
     f.close()
 
 def main(w1, w2, f, racks=None):
-    readBoard()
+    # readBoard()
     c = cpu.CPU(strategy=WeightedScorer, bl_args=[w1, w2])
     c.displayBoard(c.board)
     ms=[]
     rs=[]
     ts=[]
     ss=[]
-    while (not racks) or c.distribution:
-        if racks is not None:
-            try:
-              c.rack = next(racks)
-            except StopIteration:
-                return
-
+    while c.distribution:
         rs.append(''.join(c.rack))
         t=time.time()
-        for move in c.pick_n(5):
-            print(move)
+        ms.append(c.run())
         ts.append(round(time.time()-t, 2))
         ss.append(c.score)
         write_state_to_file(c, ms, rs, ts, ss, file=f)
+
+main(1, 1, 'out.txt')
 
 def two_player_game(w1, w2, f):
     b = Board()
@@ -73,7 +68,7 @@ def two_player_game(w1, w2, f):
 
 def playGame():
     readBoard()
-    c = cpu.CPU(strategy=WeightedScorer, bl_args=[1, 1])
+    c = cpu.CPU() #strategy=WeightedScorer, bl_args=[1, 1])
     while True:
         rack = list(input("Rack: ").upper())
         c.rack = rack
