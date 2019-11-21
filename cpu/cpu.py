@@ -52,7 +52,8 @@ class CPU():
         self.lock = threading.Lock()
         self.best_eval, self.best_move = -1000, None
 
-        self.strategy = self.BlueprintCreator(moves=None, rack=None, *self.bl_args)
+        # self.strategy = self.BlueprintCreator(moves=None, rack=None, *self.bl_args)
+        self.strategy = BlueprintBase(moves=None, rack=None)
 
 
     def drawTiles(self):

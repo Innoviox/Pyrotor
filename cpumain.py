@@ -68,6 +68,8 @@ def two_player_game(w1, w2, f):
             if not p.distribution:
                 if not (p1.rack and p2.rack):
                     return
+
+two_player_game(1, 1, 'outt.txt')
 # racks = map(list, [input("Rack: ").upper()])
 # main(1, 1, "game.txt", racks=iter(racks))
 # input()
