@@ -34,7 +34,7 @@ def main(w1, w2, f, racks=None):
         ss.append(c.score)
         write_state_to_file(c, ms, rs, ts, ss, file=f)
 
-main(1, 1, 'out.txt')
+# main(1, 1, 'out.txt')
 
 def two_player_game(w1, w2, f):
     b = Board()
@@ -62,6 +62,8 @@ def two_player_game(w1, w2, f):
             if not p.distribution:
                 if not (p1.rack and p2.rack):
                     return
+                
+two_player_game(1, 1, 'out-2.txt')
 # racks = map(list, [input("Rack: ").upper()])
 # main(1, 1, "game.txt", racks=iter(racks))
 # input()
